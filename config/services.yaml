@@ -39,3 +39,11 @@ services:
         arguments: ["@knp_menu.factory", "@app.repository.menu"]
         tags:
             - { name: knp_menu.menu_builder, method: mainMenu, alias: main } # The alias is what is used to retrieve the menu
+
+    App\Form\LoginFormType:
+        arguments:
+            $appCsrfToken: '%env(CSRF_TOKEN)%'
+
+    App\Security\LoginFormAuthenticator:
+        arguments:
+            $appCsrfToken: '%env(CSRF_TOKEN)%'

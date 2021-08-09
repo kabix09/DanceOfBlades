@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+
+    <div class="jumbotron d-flex align-items-center" style="height: 85%;">
+        <div class="container" style="width: 25rem;">   <!--  padding: 15px; margin: auto; margin-top: 30px; -->
+            {% if error %}
+                <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Login</h3>
+                    <p class="card-text">
+                        {{ form_start(loginForm, {'action': path('app_login'), 'method': 'POST'})}}
+                            {{ form_row(loginForm.email) }}
+                            {{ form_row(loginForm.password) }}
+
+                            <div class="checkbox mb-3">
+                                <label>
+                                    <input type="checkbox" name="_remember_me"> Remember me
+                                </label>
+                            </div>
+
+                            <button class="btn btn-primary btn-block" type="submit">
+                                Sign in
+                            </button>
+                        {{ form_end(loginForm) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
