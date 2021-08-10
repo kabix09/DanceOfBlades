@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Menu;
 use App\Repository\MenuRepository;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,6 +19,16 @@ class MainController extends AbstractController
         return $this->render('base\index.html.twig', [
             'controller_name' => 'MainController',
         ]);
+    }
+
+    /**
+     * @IsGranted("ROLE_USER")
+     * @Route("/menu/profile", name="app_user_profile")
+     */
+    public function profile()
+    {
+        $user = $this->getUser();
+        return new Response("<html>Welcome back {$user->getUsername()}</html>");
     }
 
     /**

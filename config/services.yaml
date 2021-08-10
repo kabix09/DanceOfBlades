@@ -47,3 +47,7 @@ services:
     App\Security\LoginFormAuthenticator:
         arguments:
             $appCsrfToken: '%env(CSRF_TOKEN)%'
+
+    App\Form\RegisterFormType:
+        arguments:
+            $appCsrfToken: '%env(CSRF_TOKEN)'

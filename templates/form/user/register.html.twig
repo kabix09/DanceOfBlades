@@ -1,6 +1,5 @@
 {% extends 'base.html.twig' %}
-
-{% block title %}Login{% endblock %}
+{% block title %}Register{% endblock %}
 
 {% block body %}
 
@@ -12,27 +11,26 @@
 
             <div class="card">
                 <div class="card-body">
-                    <h3 class="card-title text-center">Login</h3>
+                    <h3 class="card-title text-center">Create new account</h3>
                     <p class="card-text">
-                        {{ form_start(loginForm, {'action': path('app_login'), 'method': 'POST'})}}
-                            {{ form_row(loginForm.email) }}
-                            {{ form_row(loginForm.password) }}
-
+                        {{ form_start(registerForm, {'action': path('app_register'), 'method': 'POST'})}}
+                            {{ form_row(registerForm.nick) }}
+                            {{ form_row(registerForm.email) }}
+                            {{ form_row(registerForm.password.first) }}
+                            {{ form_row(registerForm.password.second) }}
                             <div class="checkbox mb-3">
-                                <label>
-                                    <input type="checkbox" name="_remember_me"> Remember me
-                                </label>
+                                    {{ form_row(registerForm.acceptTerms) }}
                             </div>
 
                             <div class="d-flex justify-content-between align-items-center">
-                                <a href="{{ path("app_register") }}">Create account</a>
+                                <a href="{{ path("app_login") }}">I have an account</a>
 
                                 <button class="btn btn-primary btn-block" type="submit">
-                                    Sign in
+                                    Register
                                 </button>
                             </div>
 
-                        {{ form_end(loginForm) }}
+                        {{ form_end(registerForm) }}
                     </p>
                 </div>
             </div>
