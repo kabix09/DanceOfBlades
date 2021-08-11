@@ -1,0 +1,35 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #c7c7c7;
+    font-family: Helvetica, Arial, sans-serif;
+}
+h1 {
+    background-color: #ad2020;
+    color: #ffffff;
+    padding: 25px 0 30px 0;
+    font-weight: normal;
+}
+img {
+    object-fit: contain;
+}
+.bottom {
+    background-color: #a0a0a0;
+}
+.logo {
+    width: 100%;
+}
+.text-center {
+    text-align: center;
+}
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #ad2020;
+    color: #fefefe;
+    border: 1px solid #fff;
+    border-radius: 3px;
+    font-size: 20px;
+    font-weight: bold;
+    text-decoration: none;
+}

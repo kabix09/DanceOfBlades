@@ -2,7 +2,9 @@
 
 namespace App\Security;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
@@ -46,15 +48,20 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
      * @var string
      */
     private $appCsrfToken;
+    /**
+     * @var EntityManagerInterface
+     */
+    private $entityManager;
 
 
-    public function __construct(UserRepository $userRepository, UserPasswordEncoderInterface $userPasswordEncoder, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, string $appCsrfToken)
+    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $userPasswordEncoder, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, string $appCsrfToken)
     {
         $this->userRepository = $userRepository;
         $this->userPasswordEncoder = $userPasswordEncoder;
         $this->router = $router;
         $this->csrfTokenManager = $csrfTokenManager;
         $this->appCsrfToken = $appCsrfToken;
+        $this->entityManager = $entityManager;
     }
 
     public function supports(Request $request)
@@ -96,6 +103,13 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
+        /** @var User $loginUser */
+        $loginUser = $token->getUser();
+        $loginUser->setLastLoginDate(new \DateTime());
+
+        $this->entityManager->persist($loginUser);
+        $this->entityManager->flush();
+
         if($targetPath = $this->getTargetPath($request->getSession(), $providerKey))
         {
             return new RedirectResponse($targetPath);

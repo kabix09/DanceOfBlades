@@ -8,9 +8,14 @@ use App\Form\LoginFormType;
 use App\Form\RegisterFormType;
 use App\Security\LoginFormAuthenticator;
 use Doctrine\ORM\EntityManagerInterface;
+use SodiumException;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
@@ -18,6 +23,16 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
+    /**
+     * @var string
+     */
+    private $emailVerifyKey;
+
+    public function __construct(string $emailVerifyKey)
+    {
+        $this->emailVerifyKey = $emailVerifyKey;
+    }
+
     /**
      * @Route("/login", name="app_login")
      * @param Request $request
@@ -45,11 +60,12 @@ class SecurityController extends AbstractController
      * @param AuthenticationUtils $authenticationUtils
      * @param UserPasswordEncoderInterface $userPasswordEncoder
      * @param EntityManagerInterface $entityManager
-     * @param GuardAuthenticatorHandler $guardAuthenticatorHandler
-     * @param LoginFormAuthenticator $loginFormAuthenticator
+     * @param MailerInterface $mailer
      * @return Response
+     * @throws SodiumException
+     * @throws TransportExceptionInterface
      */
-    public function register(Request $request, AuthenticationUtils $authenticationUtils, UserPasswordEncoderInterface $userPasswordEncoder, EntityManagerInterface $entityManager, GuardAuthenticatorHandler $guardAuthenticatorHandler, LoginFormAuthenticator $loginFormAuthenticator)
+    public function register(Request $request, AuthenticationUtils $authenticationUtils, UserPasswordEncoderInterface $userPasswordEncoder, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $error = $authenticationUtils->getLastAuthenticationError();
 
@@ -57,8 +73,6 @@ class SecurityController extends AbstractController
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
-            // todo: send activated account email +  redirect to 'thank you' page
-
             /**
              * @var RegisterUserModel $formObject
              */
@@ -79,15 +93,33 @@ class SecurityController extends AbstractController
 
             $newUser->setIsActive(false);
 
+            // generate unique token
+            $newVerifyKey = sodium_crypto_generichash(
+                (new \DateTime())->getTimestamp() . random_bytes(32),
+                $this->emailVerifyKey
+            );
+
+            $newUser->setActivateKey(
+                sodium_bin2hex($newVerifyKey)
+            );
+
+            // send an email
+            $registerEmail = (new TemplatedEmail())
+                ->from(new Address('kabix.009@gmail.com', 'kabix009'))
+                ->to(new Address($newUser->getEmail(), $newUser->getNick()))
+                ->subject('Registration email')
+                ->htmlTemplate('email/registerUser.html.twig')
+                ->context([
+                    'activateToken' => sodium_bin2hex($newVerifyKey)
+                ]);
+
+            $mailer->send($registerEmail);
+
+            // save user object in db
             $entityManager->persist($newUser);
             $entityManager->flush();
 
-            return $guardAuthenticatorHandler->authenticateUserAndHandleSuccess(
-                $newUser,
-                $request,
-                $loginFormAuthenticator,
-                'main'
-            );
+            return new Response("<html><head></head><body>Email was send successful. Please check your email in purpoe to activate your account :)</body></html>");
         }
 
         return $this->render('form/user/register.html.twig', [
@@ -96,6 +128,38 @@ class SecurityController extends AbstractController
         ]);
     }
 
+    /**
+     * @Route("/user/activateAccount/{token}", name="app_user_activate_account")
+     * @param string $token
+     * @param EntityManagerInterface $entityManager
+     * @param Request $request
+     * @param GuardAuthenticatorHandler $guardAuthenticatorHandler
+     * @param LoginFormAuthenticator $loginFormAuthenticator
+     * @return Response|null
+     * @throws \Exception
+     */
+    public function activateAccount(string $token, EntityManagerInterface $entityManager, Request $request, GuardAuthenticatorHandler $guardAuthenticatorHandler, LoginFormAuthenticator $loginFormAuthenticator): ?Response
+    {
+        $userRepository = $entityManager->getRepository(User::class);
+        $matchUser = $userRepository->findOneBy(['activateKey' => $token]);
+
+        if(!$matchUser) {
+            throw new \Exception('Token not found');
+        }
+
+        $matchUser->setActivateKey('');
+        $matchUser->setIsActive(true);
+
+        $entityManager->persist($matchUser);
+        $entityManager->flush();
+
+        return $guardAuthenticatorHandler->authenticateUserAndHandleSuccess(
+            $matchUser,
+            $request,
+            $loginFormAuthenticator,
+            'main'
+        );
+    }
     /**
      * @Route("/logout", name="app_logout")
      */

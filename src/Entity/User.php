@@ -59,6 +59,11 @@ class User implements UserInterface
      */
     private $isActive;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $activateKey;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -173,5 +178,17 @@ class User implements UserInterface
     public function eraseCredentials()
     {
         // TODO: Implement eraseCredentials() method.
+    }
+
+    public function getActivateKey(): ?string
+    {
+        return $this->activateKey;
+    }
+
+    public function setActivateKey(?string $activateKey): self
+    {
+        $this->activateKey = $activateKey;
+
+        return $this;
     }
 }

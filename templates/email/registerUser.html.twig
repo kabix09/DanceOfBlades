@@ -1,0 +1,65 @@
+{% apply inky_to_html|inline_css(source('@styles/foundation-emails.css'), source('@styles/email.css')) %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Template test</title> {# {{ email.subject }} #}
+
+</head>
+<body>
+    <container>
+        <row>
+            <columns>
+                <a href="{{ url('app_homepage') }}">
+                    <img src="{{ absolute_url(asset('logo/logo.jpg')) }}" alt="Dance of Blades" class="logo" >
+                </a>
+            </columns>
+        </row>
+        <row>
+            <columns>
+                <h1>
+                    <center>
+                        Nice to meet you Test
+                    </center>
+                </h1> {# `{{ email.toName }}`#}
+            </columns>
+        </row>
+        <row>
+            <columns>
+                <p>
+                    Welcome to <strong>Dance of Blades</strong>, your account was created successful!
+                    In order to finish registration process, you must activate your account
+                </p>
+            </columns>
+        </row>
+        <row>
+            <p class="text-center">
+                <a href="{{ url('app_user_activate_account', {'token': activateToken}) }}" class="btn">Activate</a>
+            </p>
+        </row>
+
+        <row>
+            <columns>
+                <p>
+                    <center>
+                    Explore a new world and experience amazing adventures during many exciting hours of gameplay!!!
+                    </center>
+                </p>
+            </columns>
+        </row>
+        <row class="bottom">
+            <columns>
+                <spacer size="10"></spacer>
+                <p>
+                    <center>
+                        <strong>kabix09@2021</strong>
+                    </center>
+                </p>
+                <spacer size="15"></spacer>
+            </columns>
+        </row>
+    </container>
+</body>
+</html>
+{% endapply %}

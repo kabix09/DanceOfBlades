@@ -51,3 +51,7 @@ services:
     App\Form\RegisterFormType:
         arguments:
             $appCsrfToken: '%env(CSRF_TOKEN)'
+
+    App\Controller\SecurityController:
+        arguments:
+            $emailVerifyKey: '%env(EMAIL_VERIFY_KEY)%'
