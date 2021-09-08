@@ -3,12 +3,13 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\MenuRepository;
 
 /**
  * Menu
  *
- * @ORM\Table(name="menu", indexes={@ORM\Index(name="menu_primary_key_uuid", columns={"id"})})
- * @ORM\Entity
+ * @ORM\Table(name="menu", indexes={@ORM\Index(name="menu_foreign_key_uuid", columns={"parent_id"})})
+ * @ORM\Entity(repositoryClass=MenuRepository::class)
  */
 class Menu
 {
@@ -19,28 +20,28 @@ class Menu
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $id;
+    private string $id;
 
     /**
      * @var string
      *
      * @ORM\Column(name="category", type="string", length=30, nullable=false)
      */
-    private $category;
+    private string $category;
 
     /**
      * @var string
      *
      * @ORM\Column(name="slug", type="string", length=35, nullable=false)
      */
-    private $slug;
+    private string $slug;
 
     /**
      * @var int
      *
      * @ORM\Column(name="hierarchy", type="smallint", nullable=false)
      */
-    private $hierarchy;
+    private int $hierarchy;
 
     /**
      * @var Menu
@@ -50,7 +51,7 @@ class Menu
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id")
      * })
      */
-    private $parent;
+    private ?self $parent;
 
     public function getId(): ?string
     {

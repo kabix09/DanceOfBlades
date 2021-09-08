@@ -2,6 +2,9 @@
     "behat/transliterator": {
         "version": "v1.3.0"
     },
+    "brick/math": {
+        "version": "0.9.3"
+    },
     "composer/package-versions-deprecated": {
         "version": "1.11.99.2"
     },
@@ -109,6 +112,9 @@
     "lorenzo/pinky": {
         "version": "1.0.5"
     },
+    "monolog/monolog": {
+        "version": "1.26.1"
+    },
     "nikic/php-parser": {
         "version": "v4.12.0"
     },
@@ -120,6 +126,12 @@
     },
     "psr/log": {
         "version": "1.1.4"
+    },
+    "ramsey/collection": {
+        "version": "1.2.1"
+    },
+    "ramsey/uuid": {
+        "version": "4.2.1"
     },
     "sensio/framework-extra-bundle": {
         "version": "5.2",
@@ -274,6 +286,24 @@
     },
     "symfony/mime": {
         "version": "v4.4.26"
+    },
+    "symfony/monolog-bridge": {
+        "version": "v4.4.27"
+    },
+    "symfony/monolog-bundle": {
+        "version": "3.7",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.7",
+            "ref": "a7bace7dbc5a7ed5608dbe2165e0774c87175fe6"
+        },
+        "files": [
+            "./config/packages/dev/monolog.yaml",
+            "./config/packages/prod/deprecations.yaml",
+            "./config/packages/prod/monolog.yaml",
+            "./config/packages/test/monolog.yaml"
+        ]
     },
     "symfony/options-resolver": {
         "version": "v4.4.27"

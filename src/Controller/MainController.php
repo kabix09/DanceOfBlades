@@ -15,9 +15,7 @@ class MainController extends AbstractController
      */
     public function index(): Response
     {
-        return $this->render('base\index.html.twig', [
-            'controller_name' => 'MainController',
-        ]);
+        return $this->render('base\index.html.twig');
     }
 
     /**
@@ -26,8 +24,7 @@ class MainController extends AbstractController
      */
     public function profile()
     {
-        $user = $this->getUser();
-        return new Response("<html>Welcome back {$user->getUsername()}</html>");
+        return $this->render('user/profile.html.twig');
     }
 
     /**

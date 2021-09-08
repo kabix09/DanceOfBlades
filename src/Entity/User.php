@@ -2,83 +2,96 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
+use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Ramsey\Uuid\Uuid;
+Use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
+ * User
+ *
+ * @ORM\Table(
+ *     name="[user]",
+ *     uniqueConstraints={
+ *          @ORM\UniqueConstraint(name="UNQ_user_email", columns={"email"}),
+ *          @ORM\UniqueConstraint(name="IX_user_create_account_date", columns={"create_account_date"})},
+ *     indexes={
+ *          @ORM\Index(name="FK_session_user", columns={"id"})
+ *     }
+ * )
  * @ORM\Entity(repositoryClass=UserRepository::class)
- * @ORM\Table(name="`user`")
  */
 class User implements UserInterface
 {
     /**
+     * @var string
+     *
+     * @ORM\Column(name="id", type="guid", nullable=false, options={"default"="newid()"})
      * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="IDENTITY")
      */
-    private $id;
+    private string $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @var string
+     *
+     * @ORM\Column(name="email", type="string", length=55, nullable=false)
      */
-    private $nick;
+    private string $email;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @var string
+     *
+     * @ORM\Column(name="password", type="string", length=255, nullable=false)
      */
-    private $email;
+    private string $password;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @var array
+     *
+     * @ORM\Column(name="roles", type="json", length=255, nullable=false, options={"default"="['ROLE_USER']"})
      */
-    private $password;
+    private array $roles;
 
     /**
-     * @ORM\Column(type="json")
+     * @var DateTime
+     *
+     * @ORM\Column(name="last_login_date", type="datetime", nullable=false, options={"default"="CURRENT_TIMESTAMP"})
      */
-    private $roles = [];
+    private DateTime $lastLoginDate;
 
     /**
-     * @ORM\Column(type="datetime", nullable=true)
+     * @var DateTime
+     *
+     * @ORM\Column(name="create_account_date", type="datetime", nullable=false, options={"default"="CURRENT_TIMESTAMP"})
      */
-    private $lastLoginDate;
+    private DateTime $createAccountDate;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @var DateTime|null
+     *
+     * @ORM\Column(name="accept_terms_date", type="datetime", nullable=true)
      */
-    private $createAccountDate;
+    private ?DateTime $acceptTermsDate;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @var bool
+     *
+     * @ORM\Column(name="is_active", type="boolean", nullable=false)
      */
-    private $acceptTermsDate;
+    private bool $isActive = false;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isActive;
+    public function __construct()
+    {
+        $this->id = Uuid::uuid4()->toString();
+        $this->roles = ["ROLE_USER"];
+        $this->lastLoginDate = new DateTime('now');
+    }
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $activateKey;
-
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
-    }
-
-    public function getNick(): ?string
-    {
-        return $this->nick;
-    }
-
-    public function setNick(string $nick): self
-    {
-        $this->nick = $nick;
-
-        return $this;
     }
 
     public function getEmail(): ?string
@@ -122,7 +135,7 @@ class User implements UserInterface
         return $this->lastLoginDate;
     }
 
-    public function setLastLoginDate(?\DateTimeInterface $lastLoginDate): self
+    public function setLastLoginDate(\DateTimeInterface $lastLoginDate): self
     {
         $this->lastLoginDate = $lastLoginDate;
 
@@ -146,7 +159,7 @@ class User implements UserInterface
         return $this->acceptTermsDate;
     }
 
-    public function setAcceptTermsDate(\DateTimeInterface $acceptTermsDate): self
+    public function setAcceptTermsDate(?\DateTimeInterface $acceptTermsDate): self
     {
         $this->acceptTermsDate = $acceptTermsDate;
 
@@ -178,17 +191,5 @@ class User implements UserInterface
     public function eraseCredentials()
     {
         // TODO: Implement eraseCredentials() method.
-    }
-
-    public function getActivateKey(): ?string
-    {
-        return $this->activateKey;
-    }
-
-    public function setActivateKey(?string $activateKey): self
-    {
-        $this->activateKey = $activateKey;
-
-        return $this;
     }
 }

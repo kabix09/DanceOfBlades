@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Form\dto;
+namespace App\Form\Dto;
 
 use App\Validator\UniqueUserEmail;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -9,46 +9,27 @@ use Symfony\Component\Validator\Constraints as Assert;
 class RegisterUserModel
 {
     /**
-     * @Assert\NotBlank(message="Please enter a nick")
-     * @Assert\Length(min=5, minMessage="Nick is too short")
-     * @var string $nick
-     */
-    private $nick;
-    /**
+     * @var string $email
+     *
      * @Assert\NotBlank(message="Please enter an email")
      * @UniqueUserEmail()
-     * @var string $email
      */
-    private $email;
+    private string $email;
 
     /**
+     * @var string $password
+     *
      * @Assert\NotBlank(message="Password is required")
      * @Assert\Length(min=8, maxMessage="This password is too short")
-     * @var string $password
      */
-    private $password;
+    private string $password;
 
     /**
-     * @Assert\IsTrue(message="You must agree our terms")
      * @var bool $acceptTerms
+     *
+     * @Assert\IsTrue(message="You must agree our terms")
      */
-    private $acceptTerms;
-
-    /**
-     * @return string
-     */
-    public function getNick(): ?string
-    {
-        return $this->nick;
-    }
-
-    /**
-     * @param string $nick
-     */
-    public function setNick(string $nick): void
-    {
-        $this->nick = $nick;
-    }
+    private bool $acceptTerms;
 
     /**
      * @return string

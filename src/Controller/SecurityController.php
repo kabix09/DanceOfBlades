@@ -3,21 +3,24 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Form\dto\RegisterUserModel;
+use App\Entity\UserKeys;
+use App\Form\Dto\RegisterUserModel;
 use App\Form\LoginFormType;
 use App\Form\RegisterFormType;
+use App\Repository\UserRepository;
 use App\Security\LoginFormAuthenticator;
+use App\Service\Director\UserDirector;
+use App\Service\Mailer;
+use App\Service\Token;
+use App\Service\Builder\UserKeyBuilder;
+use App\Service\Builder\UserBuilder;
+use App\Service\Director\UserKeyDirector;
 use Doctrine\ORM\EntityManagerInterface;
-use SodiumException;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
@@ -58,14 +61,15 @@ class SecurityController extends AbstractController
      * @Route("/register", name="app_register")
      * @param Request $request
      * @param AuthenticationUtils $authenticationUtils
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
      * @param EntityManagerInterface $entityManager
-     * @param MailerInterface $mailer
+     * @param UserRepository $userRepository
+     * @param UserDirector $userDirector
+     * @param UserKeyDirector $userKeyDirector
+     * @param Token $token
+     * @param Mailer $mailer
      * @return Response
-     * @throws SodiumException
-     * @throws TransportExceptionInterface
      */
-    public function register(Request $request, AuthenticationUtils $authenticationUtils, UserPasswordEncoderInterface $userPasswordEncoder, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    public function register(Request $request, AuthenticationUtils $authenticationUtils, EntityManagerInterface $entityManager, UserRepository $userRepository, UserDirector $userDirector, UserKeyDirector $userKeyDirector, Token $token, Mailer $mailer): Response
     {
         $error = $authenticationUtils->getLastAuthenticationError();
 
@@ -73,53 +77,41 @@ class SecurityController extends AbstractController
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
-            /**
-             * @var RegisterUserModel $formObject
+
+            $newUser = $userDirector->buildRegisterUser($form->getData());
+
+            /*
+             * generate unique token
              */
-            $formObject = $form->getData();
+            $newVerifyKey = $token->generate($this->emailVerifyKey)->convertToHex();
 
-            $newUser = new User();
-            $newUser->setNick($formObject->getNick());
-            $newUser->setEmail($formObject->getEmail());
-            $newUser->setPassword(
-                $userPasswordEncoder->encodePassword(
-                    $newUser,
-                    $formObject->getPassword()
-                )
-            );
-            $newUser->setRoles(['ROLE_USER']);
-            $newUser->setAcceptTermsDate(new \DateTime("now"));
-            $newUser->setCreateAccountDate(new \DateTime("now"));
+            /*
+             * exec transaction - create user & key
+             */
+            $entityManager->transactional(function ($entityManager) use ($newUser, $userKeyDirector, $newVerifyKey, $userRepository) {
+                $entityManager->persist($newUser);
+                $entityManager->flush();
 
-            $newUser->setIsActive(false);
+                /*
+                 * * prepare account activation token
+                 */
+                $newKey = $userKeyDirector->buildActivateAccount(
+                    $newVerifyKey,
+                    $userRepository->findOneBy(['email' => $newUser->getEmail()])
+                );
 
-            // generate unique token
-            $newVerifyKey = sodium_crypto_generichash(
-                (new \DateTime())->getTimestamp() . random_bytes(32),
-                $this->emailVerifyKey
-            );
 
-            $newUser->setActivateKey(
-                sodium_bin2hex($newVerifyKey)
-            );
+                $entityManager->persist($newKey);
+                $entityManager->flush();
+            });
 
-            // send an email
-            $registerEmail = (new TemplatedEmail())
-                ->from(new Address('kabix.009@gmail.com', 'kabix009'))
-                ->to(new Address($newUser->getEmail(), $newUser->getNick()))
-                ->subject('Registration email')
-                ->htmlTemplate('email/registerUser.html.twig')
-                ->context([
-                    'activateToken' => sodium_bin2hex($newVerifyKey)
-                ]);
+            /*
+             * * email verification section
+             */
+            $mailer->sendWelcomeMessage($newUser, $newVerifyKey);
 
-            $mailer->send($registerEmail);
 
-            // save user object in db
-            $entityManager->persist($newUser);
-            $entityManager->flush();
-
-            return new Response("<html><head></head><body>Email was send successful. Please check your email in purpoe to activate your account :)</body></html>");
+            return $this->render('email/afterSendEmailFeedback.html.twig');
         }
 
         return $this->render('form/user/register.html.twig', [
@@ -140,26 +132,35 @@ class SecurityController extends AbstractController
      */
     public function activateAccount(string $token, EntityManagerInterface $entityManager, Request $request, GuardAuthenticatorHandler $guardAuthenticatorHandler, LoginFormAuthenticator $loginFormAuthenticator): ?Response
     {
-        $userRepository = $entityManager->getRepository(User::class);
-        $matchUser = $userRepository->findOneBy(['activateKey' => $token]);
+        $keysRepository = $entityManager->getRepository(UserKeys::class);
+        $matchKey = $keysRepository->findOneBy(['value' => $token, 'type' => 'ACTIVATE_ACCOUNT']);
 
-        if(!$matchUser) {
-            throw new \Exception('Token not found');
+        if(!$matchKey) {
+            throw new \RuntimeException('Token not found');
         }
 
-        $matchUser->setActivateKey('');
-        $matchUser->setIsActive(true);
+        if($matchKey->getExpirationDate() < new \DateTime('now'))
+        {
+            throw new \RuntimeException('Token expired');
+        }
 
-        $entityManager->persist($matchUser);
+        //activate user account
+        $user = $matchKey->getUser();
+        $user->setIsActive(true);
+
+        // drop activation key
+        $entityManager->remove($matchKey);
         $entityManager->flush();
 
+
         return $guardAuthenticatorHandler->authenticateUserAndHandleSuccess(
-            $matchUser,
+            $user,
             $request,
             $loginFormAuthenticator,
             'main'
         );
     }
+
     /**
      * @Route("/logout", name="app_logout")
      */

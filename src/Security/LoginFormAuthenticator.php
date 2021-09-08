@@ -105,8 +105,11 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
     {
         /** @var User $loginUser */
         $loginUser = $token->getUser();
-        $loginUser->setLastLoginDate(new \DateTime());
 
+        if(!$loginUser->getIsActive())
+            return new RedirectResponse($this->router->generate('app_user_inactive_account'));
+
+        $loginUser->setLastLoginDate(new \DateTime('now'));
         $this->entityManager->persist($loginUser);
         $this->entityManager->flush();
 

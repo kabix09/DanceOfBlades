@@ -14,7 +14,6 @@
                     <h3 class="card-title text-center">Create new account</h3>
                     <p class="card-text">
                         {{ form_start(registerForm, {'action': path('app_register'), 'method': 'POST'})}}
-                            {{ form_row(registerForm.nick) }}
                             {{ form_row(registerForm.email) }}
                             {{ form_row(registerForm.password.first) }}
                             {{ form_row(registerForm.password.second) }}
