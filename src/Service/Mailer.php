@@ -14,16 +14,26 @@ class Mailer
      * @var MailerInterface
      */
     private MailerInterface $mailer;
+    /**
+     * @var string
+     */
+    private string $mailAddress;
+    /**
+     * @var string
+     */
+    private string $mailOwner;
 
-    public function __construct(MailerInterface $mailer)
+    public function __construct(MailerInterface $mailer, string $mailAddress, string $mailOwner)
     {
         $this->mailer = $mailer;
+        $this->mailAddress = $mailAddress;
+        $this->mailOwner = $mailOwner;
     }
 
     public function sendWelcomeMessage(User $user, Token $token): void
     {
         $registerEmail = (new TemplatedEmail())
-            ->from(new Address('kabix.009@gmail.com', 'kabix009'))
+            ->from(new Address($this->mailAddress, $this->mailOwner))
             ->to(new Address($user->getEmail(), explode("@", $user->getEmail())[0]))
             ->subject('Registration email')
             ->htmlTemplate('email/registerUser.html.twig')

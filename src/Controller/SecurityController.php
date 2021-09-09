@@ -4,9 +4,11 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\UserKeys;
+use App\Event\NewAccountCreatedEvent;
 use App\Form\Dto\RegisterUserModel;
 use App\Form\LoginFormType;
 use App\Form\RegisterFormType;
+use App\Repository\UserKeysRepository;
 use App\Repository\UserRepository;
 use App\Security\LoginFormAuthenticator;
 use App\Service\Director\UserDirector;
@@ -18,6 +20,7 @@ use App\Service\Director\UserKeyDirector;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -69,8 +72,16 @@ class SecurityController extends AbstractController
      * @param Mailer $mailer
      * @return Response
      */
-    public function register(Request $request, AuthenticationUtils $authenticationUtils, EntityManagerInterface $entityManager, UserRepository $userRepository, UserDirector $userDirector, UserKeyDirector $userKeyDirector, Token $token, Mailer $mailer): Response
+    public function register(Request $request, AuthenticationUtils $authenticationUtils, EntityManagerInterface $entityManager, UserRepository $userRepository, UserDirector $userDirector, UserKeyDirector $userKeyDirector, Token $token, EventDispatcherInterface $eventDispatcher): Response
     {
+        /*
+         * if not granted role then user is not logged
+         */
+        if($this->isGranted("ROLE_USER"))
+        {
+            return $this->redirectToRoute('app_user_profile');
+        }
+
         $error = $authenticationUtils->getLastAuthenticationError();
 
         $form = $this->createForm(RegisterFormType::class, new RegisterUserModel());
@@ -105,11 +116,7 @@ class SecurityController extends AbstractController
                 $entityManager->flush();
             });
 
-            /*
-             * * email verification section
-             */
-            $mailer->sendWelcomeMessage($newUser, $newVerifyKey);
-
+            $eventDispatcher->dispatch(new NewAccountCreatedEvent($newUser, $newVerifyKey), NewAccountCreatedEvent::NAME);
 
             return $this->render('email/afterSendEmailFeedback.html.twig');
         }
@@ -127,31 +134,37 @@ class SecurityController extends AbstractController
      * @param Request $request
      * @param GuardAuthenticatorHandler $guardAuthenticatorHandler
      * @param LoginFormAuthenticator $loginFormAuthenticator
+     * @param UserKeysRepository $userKeysRepository
      * @return Response|null
-     * @throws \Exception
      */
-    public function activateAccount(string $token, EntityManagerInterface $entityManager, Request $request, GuardAuthenticatorHandler $guardAuthenticatorHandler, LoginFormAuthenticator $loginFormAuthenticator): ?Response
+    public function activateAccount(string $token, EntityManagerInterface $entityManager, Request $request, GuardAuthenticatorHandler $guardAuthenticatorHandler, LoginFormAuthenticator $loginFormAuthenticator, UserKeysRepository $userKeysRepository): ?Response
     {
-        $keysRepository = $entityManager->getRepository(UserKeys::class);
-        $matchKey = $keysRepository->findOneBy(['value' => $token, 'type' => 'ACTIVATE_ACCOUNT']);
+        $foundKey = $userKeysRepository->findOneBy(['value' => $token, 'type' => 'ACTIVATE_ACCOUNT']);
 
-        if(!$matchKey) {
+        if(!$foundKey) {
             throw new \RuntimeException('Token not found');
         }
 
-        if($matchKey->getExpirationDate() < new \DateTime('now'))
+        $key = null;
+        foreach ($userKeysRepository->findBy(['user' => $foundKey->getUser()->getId(), 'type' => 'ACTIVATE_ACCOUNT']) as $matchedKey)
         {
-            throw new \RuntimeException('Token expired');
+            if($key === null && $matchedKey->getExpirationDate() > new \DateTime('now'))
+            {
+                $key = $matchedKey;
+            }
+
+            // drop activation key
+            $entityManager->remove($matchedKey);
         }
 
+        if($key === null)
+            throw new \RuntimeException('Token expired');
+
         //activate user account
-        $user = $matchKey->getUser();
+        $user = $key->getUser();
         $user->setIsActive(true);
 
-        // drop activation key
-        $entityManager->remove($matchKey);
         $entityManager->flush();
-
 
         return $guardAuthenticatorHandler->authenticateUserAndHandleSuccess(
             $user,
@@ -159,6 +172,47 @@ class SecurityController extends AbstractController
             $loginFormAuthenticator,
             'main'
         );
+    }
+
+
+    /**
+     * @param EntityManagerInterface $entityManager
+     * @param Mailer $mailer
+     * @param Token $token
+     * @param UserKeyDirector $userKeyDirector
+     * @param UserRepository $userRepository
+     * @IsGranted("ROLE_USER")
+     * @Route("/user/activateAccountEmail", name="app_user_sent_activate_email_again")
+     * @return Response
+     */
+    public function sendActivateEmail(EntityManagerInterface $entityManager, Mailer $mailer, Token $token, UserKeyDirector $userKeyDirector, UserRepository $userRepository): Response
+    {
+        /**
+         * @var User $user
+         */
+        $user = $this->getUser();
+        /*
+         * * generate unique token
+         */
+        $newVerifyKey = $token->generate($this->emailVerifyKey)->convertToHex();
+
+        /*
+         * * prepare account activation token
+         */
+        $newKey = $userKeyDirector->buildActivateAccount(
+            $newVerifyKey,
+            $userRepository->findOneBy(['email' => $user->getEmail()])
+        );
+
+        $entityManager->persist($newKey);
+        $entityManager->flush();
+
+        /*
+         * * email verification section
+         */
+        $mailer->sendWelcomeMessage($user, $newVerifyKey);
+
+        return $this->render('email/afterSendEmailFeedback.html.twig');
     }
 
     /**

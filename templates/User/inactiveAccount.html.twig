@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+
+{% block container %}
+    <p>Your account is inactive</p>
+    <p>If you didn't get activation email, please click link to get a new activation link</p>
+    <a href="{{ path('app_user_sent_activate_email_again') }}">send email</a>
+{% endblock %}

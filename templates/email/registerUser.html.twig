@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width">
-    <title>Template test</title> {# {{ email.subject }} #}
+    <title>{{ email.subject }} </title> {# {{ email.subject }} #}
 
 </head>
 <body>
@@ -20,7 +20,7 @@
             <columns>
                 <h1>
                     <center>
-                        Nice to meet you Test
+                        Nice to meet you {{ email.toName }}
                     </center>
                 </h1> {# `{{ email.toName }}`#}
             </columns>

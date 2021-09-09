@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\MenuRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,10 +21,21 @@ class MainController extends AbstractController
 
     /**
      * @IsGranted("ROLE_USER")
-     * @Route("/menu/profile", name="app_user_profile")
+     * @Route("/user/profile", name="app_user_profile")
      */
-    public function profile()
+    public function profile(): Response
     {
+        /**
+         * @var User $user
+         */
+        $user = $this->getUser();
+
+        if(!$user->getIsActive())
+        {
+            return $this->render('user/inactiveAccount.html.twig');
+        }
+        // todo: else if is active and banned - render banned banner
+
         return $this->render('user/profile.html.twig');
     }
 

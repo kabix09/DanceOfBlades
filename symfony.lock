@@ -106,6 +106,18 @@
     "laminas/laminas-code": {
         "version": "4.4.2"
     },
+<<<<<<< HEAD
+=======
+    "lcobucci/clock": {
+        "version": "2.0.0"
+    },
+    "lcobucci/jwt": {
+        "version": "4.1.5"
+    },
+    "league/flysystem": {
+        "version": "2.2.3"
+    },
+>>>>>>> 930f36a (Refactor email sending module)
     "league/html-to-markdown": {
         "version": "5.0.0"
     },
@@ -123,6 +135,9 @@
     },
     "psr/container": {
         "version": "1.1.1"
+    },
+    "psr/link": {
+        "version": "1.0.0"
     },
     "psr/log": {
         "version": "1.1.4"
@@ -251,6 +266,9 @@
             "./src/Kernel.php"
         ]
     },
+    "symfony/http-client": {
+        "version": "v4.4.31"
+    },
     "symfony/http-client-contracts": {
         "version": "v2.4.0"
     },
@@ -259,6 +277,9 @@
     },
     "symfony/http-kernel": {
         "version": "v4.4.26"
+    },
+    "symfony/inflector": {
+        "version": "v4.4.27"
     },
     "symfony/intl": {
         "version": "v4.4.27"
@@ -283,6 +304,21 @@
             "version": "1.0",
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
+    },
+    "symfony/mercure": {
+        "version": "v0.5.3"
+    },
+    "symfony/mercure-bundle": {
+        "version": "0.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "0.3",
+            "ref": "e0a854b5439186e04b28fb8887b42c54f24a0d32"
+        },
+        "files": [
+            "./config/packages/mercure.yaml"
+        ]
     },
     "symfony/mime": {
         "version": "v4.4.26"
@@ -337,6 +373,9 @@
     },
     "symfony/profiler-pack": {
         "version": "v1.0.5"
+    },
+    "symfony/property-access": {
+        "version": "v4.4.27"
     },
     "symfony/proxy-manager-bridge": {
         "version": "v4.4.25"
@@ -426,6 +465,9 @@
     },
     "symfony/var-exporter": {
         "version": "v4.4.26"
+    },
+    "symfony/web-link": {
+        "version": "v4.4.27"
     },
     "symfony/web-profiler-bundle": {
         "version": "3.3",

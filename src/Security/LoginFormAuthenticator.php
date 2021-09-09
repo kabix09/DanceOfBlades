@@ -18,6 +18,7 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\Authenticator\AbstractFormLoginAuthenticator;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
+use Twig\Environment;
 
 class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
 {
@@ -52,9 +53,13 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
      * @var EntityManagerInterface
      */
     private $entityManager;
+    /**
+     * @var Environment
+     */
+    private Environment $twig;
 
 
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $userPasswordEncoder, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, string $appCsrfToken)
+    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $userPasswordEncoder, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, Environment $twig, string $appCsrfToken)
     {
         $this->userRepository = $userRepository;
         $this->userPasswordEncoder = $userPasswordEncoder;
@@ -62,6 +67,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
         $this->csrfTokenManager = $csrfTokenManager;
         $this->appCsrfToken = $appCsrfToken;
         $this->entityManager = $entityManager;
+        $this->twig = $twig;
     }
 
     public function supports(Request $request)
@@ -105,9 +111,6 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
     {
         /** @var User $loginUser */
         $loginUser = $token->getUser();
-
-        if(!$loginUser->getIsActive())
-            return new RedirectResponse($this->router->generate('app_user_inactive_account'));
 
         $loginUser->setLastLoginDate(new \DateTime('now'));
         $this->entityManager->persist($loginUser);
