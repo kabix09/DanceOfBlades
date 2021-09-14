@@ -19,4 +19,10 @@ class AvatarRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Avatar::class);
     }
+
+    public function paginationList()
+    {
+        return $this->createQueryBuilder('a')
+            ->addSelect('a');
+    }
 }

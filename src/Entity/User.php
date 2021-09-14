@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use DateTime;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 Use App\Repository\UserRepository;
@@ -86,6 +87,11 @@ class User implements UserInterface
      * @ORM\Column(name="is_active", type="boolean", nullable=false)
      */
     private bool $isActive = false;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Avatar", mappedBy="user", fetch="EXTRA_LAZY")
+     */
+    private $avatar;
 
     public function __construct()
     {
@@ -196,5 +202,21 @@ class User implements UserInterface
     public function eraseCredentials()
     {
         // TODO: Implement eraseCredentials() method.
+    }
+
+    /**
+     * @return Collection|Avatar[]
+     */
+    public function getAvatar(): Collection
+    {
+        return $this->avatar;
+    }
+
+    /**
+     * @param array $avatar
+     */
+    public function setAvatar(array $avatar): void
+    {
+        $this->avatar = $avatar;
     }
 }

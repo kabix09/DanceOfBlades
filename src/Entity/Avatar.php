@@ -96,7 +96,7 @@ class Avatar
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="User", fetch="EXTRA_LAZY")
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="avatar", fetch="EXTRA_LAZY")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      * })

@@ -3,8 +3,28 @@
 {% block title %}Avatars{% endblock %}
 
 {% block container %}
+    <div class="row">
+        <div class="row">
+            <div class="col-9">
+            </div>
+            <div class="col-3">
+                <div class="input-group my-3 mx-auto" style="">
+                    <input class="form-control py-2 border-right-0 border" type="search" placeholder="Type something..." id="example-search-input">
+                    <span class="input-group-append">
+                        <button class="btn btn-outline-primary rounded-right" type="button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <table class="table table-light table-hover caption-top">
-        <caption>List of users</caption>
+        <caption>Avatars: {{ avatars.getTotalItemCount }}</caption>
         <thread>
             <th scope="col">#</th>
             <th scope="col">Nick</th>
@@ -14,6 +34,9 @@
             <th scope="col">Gift</th>
             <th scope="col">Specialization</th>
             <th scope="col">Level</th>
+{#            {% if is_granted("ROLE_USER") %}#}
+{#                <th scope="col"></th>#}
+{#            {% endif %}#}
         </thread>
 
         <tbody>
@@ -21,15 +44,19 @@
             {% for avatar in avatars %}
                 <tr>
                     <th scope="row">{{ loop.index }}</th>
-                    <td>{{ avatar.nick }}</td>
+                    <td><a href="{{ path('app_avatar_guest', {'nick': avatar.nick}) }}">{{ avatar.nick }}</a></td>
                     <td>{{ avatar.nickname }}</td>
                     <td>{{ avatar.race }}</td>
                     <td>{{ avatar.class }}</td>
                     <td>{{ avatar.gift }}</td>
                     <td>{{ avatar.specialization }}</td>
                     <td>{{ avatar.level }}</td>
+{#                    {% if is_granted("ROLE_USER") %}
+                        <td><a href="{{ path('app_friend_add', {id: avatar.id}) }}">Add</a></td>
+                    {% endif %}#}
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+    {{ knp_pagination_render(avatars) }}
 {% endblock %}

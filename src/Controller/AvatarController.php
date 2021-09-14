@@ -11,9 +11,11 @@ use App\Form\Avatar\ChangeAvatarImageFormType;
 use App\Form\Avatar\CreateAvatarFormType;
 use App\Form\Dto\CreateAvatarModel;
 use App\Repository\AvatarRepository;
+use App\Repository\FriendshipRepository;
 use App\Service\Director\AvatarDirector;
 use App\Service\Uploader;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -162,6 +164,25 @@ class AvatarController extends AbstractController
         return $this->render('form/avatar/changeAvatarImage.html.twig', [
             'changeImageForm' => $form->createView(),
             'error' => $error
+        ]);
+    }
+
+    /**
+     * @Route("/avatar/{nick}", name="app_avatar_guest")
+     * @IsGranted("ROLE_USER")
+     * @param Avatar $avatar
+     * @param FriendshipRepository $friendshipRepository
+     * @return Response
+     */
+    public function guestAvatar(Avatar $avatar, FriendshipRepository $friendshipRepository): Response
+    {
+        $friendships = $friendshipRepository->isFriendshipExists($avatar);
+
+        return $this->render('user/guestProfile.html.twig', [
+            'avatar' => $avatar,
+            'isAdmin' => in_array("ROLE_ADMIN", $this->getUser()->getRoles(),true),
+            'isFriendship' => $friendships ? true : false,
+            'friendship' => $friendships ? $friendships[0] : null   // pass the news friendship, oldest are historical eg deleted or rejected relations
         ]);
     }
 }

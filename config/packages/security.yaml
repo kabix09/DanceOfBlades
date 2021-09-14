@@ -23,6 +23,7 @@ security:
                 lifetime: 2592000 # 30 days in seconds
             logout:
                 path: app_logout
+            access_denied_handler: App\Security\AccessDeniedHandler
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#firewalls-authentication
 

@@ -1,0 +1,65 @@
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9 d-flex justify-content-between flex-wrap">
+            {% for friendship in friendships %}
+                {% if friendship.addressee.id == app.user.avatar[0].id %}
+                    {% set avatar = friendship.requester %}
+                {% elseif friendship.requester.id == app.user.avatar[0].id %}
+                    {% set avatar = friendship.addressee %}
+                {% endif %}
+
+                <div class="card mb-3" style="width: 350px; height: 135px">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            <img src="{{ asset('uploads/avatar_image/' ~ avatar.image) }}" class="img-fluid rounded-start img-thumbnail"  alt="{{ avatar.nick }}" style="height: 100%; width: 100%; object-fit: contain;">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ avatar.nick }}</h5>
+                                <p class="card-text">{{ avatar.race }} - {{ avatar.class }}</p>
+                                <p class="card-text"><small class="text-muted">level: {{ avatar.level }}</small></p>
+                            </div>
+                        </div>
+                        <div class="col-md-2" style="text-align: center; margin: auto auto">
+                            <a href="{{ path('app_friend_remove', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}" style="text-decoration: none">&#10060;</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-sm-3" style="border-left: 2px solid linen">
+            <p><strong>Invitations</strong></p>
+
+            {% for invitation in notAcceptedInvitations %}
+
+                {% if invitation.addressee.id == app.user.avatar[0].id %}
+                    {% set invitator = invitation.requester %}
+                {% elseif invitation.requester.id == app.user.avatar[0].id %}
+                    {% set invitator = invitation.addressee %}
+                {% endif %}
+
+                <div class="card mb-3" style="width: 100%;">
+                    <div class="row g-0">
+                        <div class="col-md-3">
+                            <img src="{{ asset('uploads/avatar_image/' ~ invitator.image) }}" class="img-fluid rounded-start img-thumbnail"  alt="{{ invitator.nick }}" style="height: 100%; width: 100%; object-fit: contain;">
+                        </div>
+                        <div class="col-md-7">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ invitator.nick }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-2" style="text-align: center; margin: auto auto">
+                            <a href="{{ path('app_friend_accept_invitation', {'requester': invitation.requester.nick, 'addressee': invitation.addressee.nick}) }}" style="text-decoration: none">&#10004;</a>
+                            <a href="{{ path('app_friend_reject_invitation', {'requester': invitation.requester.nick, 'addressee': invitation.addressee.nick}) }}" style="text-decoration: none">&#10060;</a>
+                        </div>
+                    </div>
+                </div>
+
+
+            {% endfor %}
+        </div>
+    </div>
+
+
+</div>

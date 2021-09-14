@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block container %}
+    <div class="row" style="min-height: 200px;">
+        <div class="col-sm-2" style="max-height: 100%">
+            <img src="{{ absolute_url(asset('uploads/avatar_image/' ~ avatar.image))}}" alt="{{ avatar.image }}" class="img-thumbnail" style="width:100%; max-width: 100%; height: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+        <div class="col-sm" style="margin: auto auto">
+            <h2><strong>{{ avatar.nick }} {% if isAdmin == true %}&#128081;{% endif %}</strong></h2>
+            <h4>Level: {{ avatar.level }}</h4>
+            <div class="w-100"></div>
+            <div>{{ avatar.nickname }}</div>
+        </div>
+        <div class="col-sm-2" style="margin: auto auto">
+            {% if isFriendship == true and friendship.accepteddate is null %}
+                <div>Invitation already sent</div>
+            {% elseif isFriendship == true and friendship.deleteddate is null and friendship.rejecteddate is null %}
+                {% if friendship.acceptedDate is not null %}
+                    <div><a href="{{ path('app_friend_remove', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Remove friend</a></div>
+                {% elseif friendship.sentDate is not null %}
+                    <div><a href="{{ path('app_friend_accept_invitation', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Accept</a></div>
+                    <div><a href="{{ path('app_friend_reject_invitation', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Reject</a></div>
+                {% endif %}
+            {% else %}
+                <div><a href="{{ path('app_friend_add', { 'nick': avatar.nick }) }}">Add friend</a></div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

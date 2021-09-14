@@ -50,7 +50,8 @@ class MainController extends AbstractController
 
         return $this->render('user/profile.html.twig', [
             'user' => $user,
-            'avatar' => $avatar
+            'avatar' => $avatar,
+            'isAdmin' => in_array("ROLE_ADMIN", $this->getUser()->getRoles(),true),
         ]);
     }
 
