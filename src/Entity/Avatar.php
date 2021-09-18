@@ -99,6 +99,13 @@ class Avatar
     private User $user;
 
     /**
+     * @var string|null
+     *
+     * @ORM\Column(name="image", type="string", nullable=true)
+     */
+    private ?string $image;
+
+    /**
      * Constructor
      */
     public function __construct()
@@ -220,4 +227,15 @@ class Avatar
         return $this;
     }
 
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(string $image): self
+    {
+        $this->image = $image;
+
+        return $this;
+    }
 }

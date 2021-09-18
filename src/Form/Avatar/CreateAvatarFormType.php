@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Image;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -67,6 +68,15 @@ class CreateAvatarFormType extends AbstractType
                 'constraints' => [
                     new NotBlank([
                         'message' => 'You must choose a class'
+                    ])
+                ]
+            ])
+            ->add('image', FileType::class, [
+                'required' => false,
+                'constraints' => [
+                    new Image([
+                        'maxSize' => ini_get('upload_max_filesize'),
+                        'maxSizeMessage' => sprintf('Image musn\'t be bigger than %s', ini_get('upload_max_filesize'))
                     ])
                 ]
             ])

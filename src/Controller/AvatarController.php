@@ -55,6 +55,18 @@ class AvatarController extends AbstractController
             /** @var Avatar $newAvatar */
             $newAvatar = $avatarDirector->newAvatar($form->getData());
 
+            /** @Var UploadedFile | null $avatarImage */
+            $avatarImage = $form->getData()->getImage();
+            if($avatarImage) {
+                // image
+                $destinationPath = $this->getParameter('kernel.project_dir') . '/public/uploads/avatar';
+
+                $avatarImage->move(
+                    $destinationPath,
+                    $newAvatar->getImage()
+                );
+            }
+
             $entityManager->persist($newAvatar);
             $entityManager->flush();
 

@@ -32,6 +32,18 @@ class AvatarDirector
             ->setUser($this->security->getUser())
         ;
 
+        /**
+         * @var UploadedFile $image
+         */
+        $image = $avatarModel->getImage();
+        if($image)
+        {
+            $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $newName = Urlizer::urlize($originalName) . '-' . uniqid('', true) . '.' . $image->guessExtension();
+
+            $this->avatar->setImage($newName);
+        }
+
         return $this->avatar;
     }
 }
