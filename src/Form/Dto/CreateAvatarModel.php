@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Form\Dto;
 
+use App\Validator\CheckAvatarClass;
+use App\Validator\CheckAvatarRace;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Validator\UniqueAvatarNick;
@@ -21,6 +23,7 @@ class CreateAvatarModel
      * @var string
      *
      * @Assert\NotBlank(message="Please choode a race")
+     * @CheckAvatarRace()
      */
     private string $race;
 
@@ -28,6 +31,7 @@ class CreateAvatarModel
      * @var string
      *
      * @Assert\NotBlank(message="Please choose a class")
+     * @CheckAvatarClass()
      */
     private string $class;
 

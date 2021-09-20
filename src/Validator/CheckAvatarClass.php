@@ -8,11 +8,11 @@ use Symfony\Component\Validator\Constraint;
  * @Annotation
  * @Target({"PROPERTY", "ANNOTATION"})
  */
-class UniqueAvatarNick extends Constraint
+class CheckAvatarClass extends Constraint
 {
     /*
      * Any public properties become valid options for the annotation.
      * Then, use these in your validator class.
      */
-    public $message = 'This nick already exists.';
+    public $message = 'The class "{{ value }}" not exists';
 }

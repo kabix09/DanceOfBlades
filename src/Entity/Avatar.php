@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use App\Validator\CheckAvatarClass;
+use App\Validator\CheckAvatarRace;
+use App\Validator\UniqueAvatarNick;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 Use App\Repository\AvatarRepository;
@@ -50,6 +53,7 @@ class Avatar
      * @var string
      *
      * @ORM\Column(name="race", type="string", length=15, nullable=false)
+     * @CheckAvatarRace()
      */
     private string $race;
 
@@ -57,6 +61,7 @@ class Avatar
      * @var string
      *
      * @ORM\Column(name="class", type="string", length=15, nullable=false)
+     * @CheckAvatarClass()
      */
     private string $class;
 
