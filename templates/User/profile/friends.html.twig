@@ -2,9 +2,9 @@
     <div class="row">
         <div id="avatar_friends" class="col-sm-9 d-flex justify-content-between flex-wrap">
             {% for friendship in friendships %}
-                {% if friendship.addressee.id == app.user.avatar[0].id %}
+                {% if friendship.addressee.id == app.user.avatar.id %}
                     {% set avatar = friendship.requester %}
-                {% elseif friendship.requester.id == app.user.avatar[0].id %}
+                {% elseif friendship.requester.id == app.user.avatar.id %}
                     {% set avatar = friendship.addressee %}
                 {% endif %}
 
@@ -48,9 +48,9 @@
 
             {% for invitation in notAcceptedInvitations %}
 
-                {% if invitation.addressee.id == app.user.avatar[0].id %}
+                {% if invitation.addressee.id == app.user.avatar.id %}
                     {% set invitator = invitation.requester %}
-                {% elseif invitation.requester.id == app.user.avatar[0].id %}
+                {% elseif invitation.requester.id == app.user.avatar.id %}
                     {% set invitator = invitation.addressee %}
                 {% endif %}
 
@@ -89,7 +89,7 @@
                 // Append the topic(s) to subscribe as query parameter
                 const hub = new URL(hubUrl, window.origin);
 
-                hub.searchParams.append('topic', 'http://localhost:8000/{{ app.user.avatar[0].nick }}/invitations');
+                hub.searchParams.append('topic', 'http://localhost:8000/{{ app.user.avatar.nick }}/invitations');
 
                 // Subscribe to updates
                 const eventSource = new EventSource(hub);
@@ -106,7 +106,7 @@
 
                     // create invitatin's boxes
                     avatarInvitations.innerHTML = invitations.map((invitation) => {
-                        const avatarId = '{{ app.user.avatar[0].id }}';
+                        const avatarId = '{{ app.user.avatar.id }}';
                         const invitator = invitation.addressee.id === avatarId ? invitation.requester : invitation.addressee;
 
                         const imageLink = 'http://' + window.location.hostname + ':' + window.location.port + '/uploads/avatar_image/' + invitator.image;

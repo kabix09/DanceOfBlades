@@ -53,7 +53,7 @@ class FriendshipVoter extends Voter
 
                 /* if user is logged and user's avatar is one of friendship's members then grant access*/
                 if($this->security->isGranted("ROLE_USER") &&
-                    ($subject->getRequester() === $user->getAvatar()[0] || $subject->getAddressee() === $user->getAvatar()[0])
+                    ($subject->getRequester() === $user->getAvatar()|| $subject->getAddressee() === $user->getAvatar())
                 ) {
                     return true;
                 }

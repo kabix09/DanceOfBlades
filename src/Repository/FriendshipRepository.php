@@ -88,7 +88,7 @@ class FriendshipRepository extends ServiceEntityRepository
     {
         /** @var User $user */
         $user = $this->security->getUser();
-        $loggedAvatar = $user->getAvatar()[0];
+        $loggedAvatar = $user->getAvatar();
 
         return $this->createQueryBuilder('isFriend')
             ->andWhere('isFriend.requester = :loggedAvatar AND isFriend.addressee = :otherAvatar')

@@ -46,8 +46,8 @@ class FriendsController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $friendships = $friendshipRepository->findFriends($user->getAvatar()[0]);
-        $notAcceptedInvitations = $friendshipRepository->findInvitations($user->getAvatar()[0]);
+        $friendships = $friendshipRepository->findFriends($user->getAvatar());
+        $notAcceptedInvitations = $friendshipRepository->findInvitations($user->getAvatar());
 
         return $this->render('user/profile/friends.html.twig', [
             'friendships' => $friendships,
@@ -73,7 +73,7 @@ class FriendsController extends AbstractController
         if(empty($friendship) || !is_null($friendship[0]->getRejectedDate()) || !is_null($friendship[0]->getDeletedDate()))
         {
             $newFriendship = (new Friendship())
-                ->setRequester($this->getUser()->getAvatar()[0])
+                ->setRequester($this->getUser()->getAvatar())
                 ->setAddressee($invitedAvatar)
                 ->setSentDate(new MyDateTime())
             ;

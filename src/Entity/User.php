@@ -89,7 +89,7 @@ class User implements UserInterface
     private bool $isActive = false;
 
     /**
-     * @ORM\OneToMany(targetEntity="Avatar", mappedBy="user", fetch="EXTRA_LAZY")
+     * @ORM\OneToOne(targetEntity="Avatar", mappedBy="user", fetch="EXTRA_LAZY")
      */
     private $avatar;
 
@@ -204,19 +204,15 @@ class User implements UserInterface
         // TODO: Implement eraseCredentials() method.
     }
 
-    /**
-     * @return Collection|Avatar[]
-     */
-    public function getAvatar(): Collection
+    public function getAvatar(): Avatar
     {
         return $this->avatar;
     }
 
-    /**
-     * @param array $avatar
-     */
-    public function setAvatar(array $avatar): void
+    public function setAvatar(Avatar $avatar): self
     {
         $this->avatar = $avatar;
+
+        return $this;
     }
 }

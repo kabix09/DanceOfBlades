@@ -17,7 +17,7 @@
                 {% if friendship.acceptedDate is not null %}
                     <div><a href="{{ path('app_friend_remove', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Remove friend</a></div>
                 {% elseif friendship.acceptedDate is null %}
-                    {% if friendship.requester.nick == app.user.avatar[0].nick %}
+                    {% if friendship.requester.nick == app.user.avatar.nick %}
                         <div>Invitation already sent</div>
                     {% else %}
                         <div><a href="{{ path('app_friend_accept_invitation', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Accept</a></div>
