@@ -3,20 +3,19 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Repository\MenuRepository;
 
 /**
  * Menu
  *
- * @ORM\Table(name="menu", indexes={@ORM\Index(name="menu_foreign_key_uuid", columns={"parent_id"})})
- * @ORM\Entity(repositoryClass=MenuRepository::class)
+ * @ORM\Table(name="menu", indexes={@ORM\Index(name="FK_menu_parent_uuid", columns={"parent_id"})})
+ * @ORM\Entity
  */
 class Menu
 {
     /**
      * @var string
      *
-     * @ORM\Column(name="id", type="string", length=36, nullable=false)
+     * @ORM\Column(name="id", type="guid", nullable=false, options={"default"="newid()"})
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
@@ -30,13 +29,6 @@ class Menu
     private string $category;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="slug", type="string", length=35, nullable=false)
-     */
-    private string $slug;
-
-    /**
      * @var int
      *
      * @ORM\Column(name="hierarchy", type="smallint", nullable=false)
@@ -44,14 +36,21 @@ class Menu
     private int $hierarchy;
 
     /**
-     * @var Menu
+     * @var int
+     *
+     * @ORM\Column(name="sequency", type="smallint", nullable=false)
+     */
+    private int $sequency;
+
+    /**
+     * @var Menu|null
      *
      * @ORM\ManyToOne(targetEntity="Menu")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="parent_id", referencedColumnName="id")
      * })
      */
-    private ?self $parent;
+    private ?Menu $parent;
 
     public function getId(): ?string
     {
@@ -70,18 +69,6 @@ class Menu
         return $this;
     }
 
-    public function getSlug(): ?string
-    {
-        return $this->slug;
-    }
-
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
-
-        return $this;
-    }
-
     public function getHierarchy(): ?int
     {
         return $this->hierarchy;
@@ -90,6 +77,18 @@ class Menu
     public function setHierarchy(int $hierarchy): self
     {
         $this->hierarchy = $hierarchy;
+
+        return $this;
+    }
+
+    public function getSequency(): ?int
+    {
+        return $this->sequency;
+    }
+
+    public function setSequency(int $sequency): self
+    {
+        $this->sequency = $sequency;
 
         return $this;
     }
@@ -105,6 +104,4 @@ class Menu
 
         return $this;
     }
-
-
 }

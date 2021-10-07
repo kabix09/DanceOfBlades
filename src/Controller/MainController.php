@@ -4,21 +4,33 @@ namespace App\Controller;
 
 use App\Entity\Avatar;
 use App\Entity\User;
+use App\Menu\MenuMapper;
 use App\Repository\AvatarRepository;
 use App\Repository\MenuRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 
 class MainController extends AbstractController
 {
     /**
-     * @Route("/", name="app_homepage")
+     * @Route("/", name="app_home")
      */
     public function index(): Response
     {
         return $this->render('base\index.html.twig');
+    }
+
+    /**
+     * @Route("/blankpage", name="app_blank_page")
+     * @return Response
+     */
+    public function blankPage()
+    {
+        return $this->render('base/blank.html.twig');
     }
 
     /**
@@ -58,26 +70,18 @@ class MainController extends AbstractController
     /**
      * @Route("/menu/{menu}", name="menu")
      * @param string $menu
-     * @param MenuRepository $menuRepository
+     * @param RouterInterface $router
+     * @return RedirectResponse
      */
-    public function menu(string $menu, MenuRepository $menuRepository)
+    public function menu(string $menu, RouterInterface $router, MenuMapper $menuMapper)
     {
-//        if(in_array($menu,
-//            array_reduce(
-//                $menuRepository->findAll(),
-//                function (array $response, Menu $menu) {
-//                    $response[] = $menu->getCategory();
-//                    return $response;
-//                },
-//                []
-//            ), true)
-//        ) {
-//            return new Response(
-//                '<html><body>Current page: ' . $menu . '</body></html>'
-//            );
-//        }
-//        else
-//            return $this->redirectToRoute('app_login');
-//            //return new Response("<body>Not found {$menu}</body>");
+        $route = $menuMapper->mapRoute($menu);
+
+        if(array_key_exists($route, iterator_to_array($router->getRouteCollection()->getIterator())))
+        {
+            return $this->redirectToRoute($route);
+        }
+
+        return $this->redirectToRoute('app_blank_page');
     }
 }

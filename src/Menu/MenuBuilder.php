@@ -7,142 +7,312 @@ use App\Entity\Menu;
 use App\Repository\MenuRepository;
 use Knp\Menu\FactoryInterface;
 use Knp\Menu\ItemInterface;
+use Symfony\Component\Security\Core\Security;
 
 final class MenuBuilder
 {
     /**
      * @var FactoryInterface
      */
-    private $factory;
+    private FactoryInterface $factory;
+
     /**
      * @var MenuRepository
      */
-    private $repository;
+    private MenuRepository $repository;
 
-    public function __construct(FactoryInterface $factory, MenuRepository $menuRepository)
+    /**
+     * @var Security
+     */
+    private Security $security;
+
+    public function __construct(FactoryInterface $factory, MenuRepository $menuRepository, Security $security)
     {
         $this->factory = $factory;
         $this->repository = $menuRepository;
+        $this->security = $security;
     }
 
+    /**
+     * @return ItemInterface
+     * @throws \ReflectionException
+     */
     public function mainMenu(): ItemInterface
     {
-        $items = $this->countingSort(
-            $this->repository->findAll()
-        );
+        // create menu root
+        $root = $this->factory->createItem('root');
+        $root->setChildrenAttribute('class', 'navbar-nav'); // set <ul> attribute -- mx-auto mb-2 mb-lg-0
 
-        $menu = $this->factory->createItem('root');
-        $menu->setChildrenAttribute('class', 'navbar-nav mr-auto'); // set <ul> attribute
+        // get menu labels
+        $menuLabels = $this->repository->findAll();
 
-        /* @var $menuElement Menu */
-        foreach ($items as $menuElement)
+        // sort menu labels
+        $this->mergeSort($menuLabels, 0, count($menuLabels)-1);
+
+        // requires items to be sorted - to correctly find last in first row
+        $this->setMenuPrefix($menuLabels);
+
+        /* @var $label Menu */
+        foreach ($menuLabels as $label)
         {
-            if(!$menuElement instanceof Menu) {
+            if(!$label instanceof Menu) {
                 continue;
             }
 
-            $newMenuLabel = $this->factory->createItem($menuElement->getCategory(), [
-                'route' => strtolower((new \ReflectionClass($menuElement))->getShortName()),
+            // create new menu label
+            $newMenuLabel = $this->factory->createItem($label->getCategory(), [
+                'route' => strtolower((new \ReflectionClass($label))->getShortName()),
                 'routeParameters' => [
-                    'menu' => $this->generateRouteParameters($menuElement)
+                    'menu' => $this->generateRoute($label)
                 ]
             ]);
 
-            if($menuElement->getParent() !== null) {
+            // fix menu label parent styling: add dropdown properties etc
+            $menuLabelParent = $this->getMenuLabelParent($root, $label);    // return root if label is not children
 
-                $parentMenuLabel = $this->getMenuLabel($menu, $menuElement);
+            if($label->getParent() !== null) {
+                $this->styleMenuLabelParent($menuLabelParent, $label, );
 
-                // add dropdown css property to parent label
-                $parentMenuLabel->getParent() !== null && $parentMenuLabel->getParent()->getName() !== 'root' ?
-                    $parentMenuLabel->setAttribute('class', 'dropdown-item dropdown-submenu') :
-                    $parentMenuLabel->setAttribute('class', 'nav-item dropdown');   // </li>
-
-                $parentMenuLabel->setLinkAttribute('class', 'nav-link dropdown-toggle');    // <a>
-                $parentMenuLabel->setLinkAttribute('id', "{$menuElement->getParent()->getSlug()}");
-                $parentMenuLabel->setLinkAttribute('role', 'button');
-                $parentMenuLabel->setLinkAttribute('data-toggle', 'dropdown');
-                $parentMenuLabel->setLinkAttribute('aria-haspopup', 'true');
-                $parentMenuLabel->setLinkAttribute('aria-expanded', 'false');
-
-                $parentMenuLabel->setChildrenAttribute('class', 'dropdown-menu');   // eg <ul>
-
-                // add sub menu style to new label
-                $parentMenuLabel->setChildrenAttribute('aria-labelledby', "{$menuElement->getSlug()}");
                 $newMenuLabel->setAttribute('class', 'dropdown-item');  // <li>
                 $newMenuLabel->setLinkAttribute('class', 'nav-link');   // <a>
-
             } else {
-                $parentMenuLabel = $menu;
-
                 $newMenuLabel->setAttribute('class', 'nav-item');
                 $newMenuLabel->setLinkAttribute('class', 'nav-link');
             }
 
-            $parentMenuLabel->addChild($newMenuLabel);
+            // save element
+            $menuLabelParent->addChild($newMenuLabel);
         }
 
-        return $menu;
+        return $root;
     }
 
-    private function countingSort(array $menuUnorderedList): array
+    /**
+     * @param array $menu
+     */
+    private function setMenuPrefix(array &$menu): void
     {
-        $supportArray = [];
-        $menuOrderedArray = [];
-        $maxDeep  = 1;
+        /** @var Menu $value */ // return by reference - to not copy object but modify orginal instance
+        $firstFloor = array_filter($menu, function (&$value) {
+            if($value->getHierarchy() === 1)
+                return $value;
+        });
 
-        foreach ($menuUnorderedList as $menuElement) {
-            if($maxDeep < $menuElement->getHierarchy()) {
-                $maxDeep = $menuElement->getHierarchy();
+        $prefix = (new Menu())
+            ->setHierarchy(1)
+            ->setParent(null)
+            ->setSequency(count($firstFloor));
+
+//        /** @var Menu $lastElement */ // get last label from first floor
+//        $lastElement = end($firstFloor);
+
+        if($this->security->isGranted("ROLE_USER")) {
+            //$lastElement->setCategory("Profile");
+            $prefix->setCategory('Profile');
+        }else{
+            //$lastElement->setCategory("Sign in");
+            $prefix->setCategory('Sign In');
+        }
+
+        $menu[] = $prefix;
+    }
+
+    /**
+     * @param array $inputData
+     * @param int $begin
+     * @param int $end
+     */
+    private function mergeSort(array &$inputData, int $begin, int $end): void
+    {
+        if($begin >= $end)
+        {
+            return;
+        }
+
+        $mid = (int)($begin + ($end - $begin) / 2);
+
+        $this->mergeSort($inputData, $begin, $mid);
+        $this->mergeSort($inputData, $mid + 1, $end);
+        $this->merge($inputData, $begin, $mid, $end);
+    }
+
+    /**
+     * @param array $inputData
+     * @param int $begin
+     * @param int $mid
+     * @param int $end
+     */
+    private function merge(array &$inputData, int $begin, int $mid, int $end): void
+    {
+        // init array
+        $leftSorted = [];
+        $rightSorted = [];
+
+        $subArrayLeft = $mid - $begin + 1;
+        $subArrayRight = $end - $mid;
+
+        for($i = 0; $i < $subArrayLeft; $i++) {
+            $leftSorted[$i] = $inputData[$begin + $i];
+        }
+
+        for($j=0; $j < $subArrayRight; $j++) {
+            $rightSorted[$j] = $inputData[$mid + 1 + $j];
+        }
+
+        $leftArrayIndex = 0;
+        $rightArrayIndex = 0;
+        $sortedArrayIndex = $begin;
+
+        // todo: don't work perfect but sorts correctly and module works :D - don't insert children after parents (using sequence)
+        while($leftArrayIndex < $subArrayLeft && $rightArrayIndex < $subArrayRight) {
+
+            /// note: sort groups but children aren't after they parent
+            // 1 sort by objects hierarchy
+
+            if($leftSorted[$leftArrayIndex]->getHierarchy() < $rightSorted[$rightArrayIndex]->getHierarchy()) {
+
+                $inputData[$sortedArrayIndex] = $leftSorted[$leftArrayIndex];
+                $leftArrayIndex++;
+            } else if($leftSorted[$leftArrayIndex]->getHierarchy() > $rightSorted[$rightArrayIndex]->getHierarchy()) {
+
+                $inputData[$sortedArrayIndex] = $rightSorted[$rightArrayIndex];
+                $rightArrayIndex++;
+            } else if($leftSorted[$leftArrayIndex]->getHierarchy() === $rightSorted[$rightArrayIndex]->getHierarchy()) {
+                // if hierarchy is the same then sort by parents sequence
+
+                if($leftSorted[$leftArrayIndex]->getParent() === $rightSorted[$rightArrayIndex]->getParent()) {
+                    // if parent's sequences are equal or parents are the same one - sort by object sequence
+
+                    if ($leftSorted[$leftArrayIndex]->getSequency() < $rightSorted[$rightArrayIndex]->getSequency()) {
+                        $inputData[$sortedArrayIndex] = $leftSorted[$leftArrayIndex];
+                        $leftArrayIndex++;
+                    } else if ($leftSorted[$leftArrayIndex]->getSequency() > $rightSorted[$rightArrayIndex]->getSequency()) {
+                        $inputData[$sortedArrayIndex] = $rightSorted[$rightArrayIndex];
+                        $rightArrayIndex++;
+                    } else {
+                        dump($leftSorted[$leftArrayIndex]);
+                        dump($rightSorted[$rightArrayIndex]);
+                        dd('this object must be the same one');
+                    }
+                }else if($leftSorted[$leftArrayIndex]->getParent()->getSequency() < $rightSorted[$rightArrayIndex]->getParent()->getSequency())
+                {
+                    $inputData[$sortedArrayIndex] = $leftSorted[$leftArrayIndex];
+                    $leftArrayIndex++;
+                }else if($leftSorted[$leftArrayIndex]->getParent()->getSequency() > $rightSorted[$rightArrayIndex]->getParent()->getSequency())
+                {
+                    $inputData[$sortedArrayIndex] = $rightSorted[$rightArrayIndex];
+                    $rightArrayIndex++;
+                }
+            }else{
+                dump('else 1 - what the hell...');
+                dump($inputData);
+                dump($leftSorted[$leftArrayIndex]);
+                dd($rightSorted[$rightArrayIndex]);
             }
+
+            $sortedArrayIndex++;
         }
 
-        for($i = 0, $iMax = count($menuUnorderedList) + 1; $i < $iMax; $i++) {
-            $menuOrderedArray[$i] = 0;
+        // Copy the remaining elements of
+        // left[], if there are any
+        while ($leftArrayIndex < $subArrayLeft) {
+            $inputData[$sortedArrayIndex] = $leftSorted[$leftArrayIndex];
+            $sortedArrayIndex++;
+            $leftArrayIndex++;
         }
-
-        for($i = 0; $i < $maxDeep+1; $i++) {
-            $supportArray[$i] = 0;
+        // Copy the remaining elements of
+        // right[], if there are any
+        while ($rightArrayIndex < $subArrayRight) {
+            $inputData[$sortedArrayIndex] = $rightSorted[$rightArrayIndex];
+            $sortedArrayIndex++;
+            $rightArrayIndex++;
         }
-
-        foreach ($menuUnorderedList as $menuElement) {
-            ++$supportArray[$menuElement->getHierarchy()];
-        }
-
-        for($i = 1; $i < $maxDeep+1; $i++) {
-            $supportArray[$i] += $supportArray[$i - 1];
-        }
-
-        for($index = count($menuUnorderedList)-1; $index>=0; $index--) {
-            $menuOrderedArray[$supportArray[$menuUnorderedList[$index]->getHierarchy()]] = $menuUnorderedList[$index];
-            --$supportArray[$menuUnorderedList[$index]->getHierarchy()];
-        }
-
-        return $menuOrderedArray;
     }
 
-    private function getMenuLabel(ItemInterface $core, ?Menu $currentMenuLabel): ItemInterface
+    /**
+     * Return menu label instance
+     *
+     * @param ItemInterface $core
+     * @param Menu|null $currentMenuLabel
+     * @return ItemInterface
+     */
+    private function getMenuLabelParent(ItemInterface $core, ?Menu $currentMenuLabel): ItemInterface
     {
-        if($currentMenuLabel === null)
+        if($currentMenuLabel === null) {
             return $core;
+        }
 
-        $label = $this->getMenuLabel($core, $currentMenuLabel->getParent());
-        return $label[$currentMenuLabel->getCategory()] ?? $label;
+        $menuLabel = $this->getMenuLabelParent($core, $currentMenuLabel->getParent());
+        return $menuLabel[$currentMenuLabel->getCategory()] ?? $menuLabel;
     }
 
-    // TODO: change route: from a+b+c to a/b/c
-    private function generateRouteParameters(Menu $currentMenuLabel): string
+    /**
+     * @param ItemInterface $item
+     * @param Menu $label
+     */
+    private function styleMenuLabelParent(ItemInterface $item, Menu $label): void
     {
-        if($currentMenuLabel->getParent() === null)
-            return $currentMenuLabel->getSlug();
+        // add dropdown css property to parent label
+        ($item->getParent() !== null && $item->getParent()->getName() !== 'root')
+            ? $item->setAttribute('class', 'dropdown-item dropdown-submenu')
+            : $item->setAttribute('class', 'nav-item dropdown mx-2');   // </li>
+
+        // set link attributes
+        $linkAttributes = [
+            'class' => 'nav-link dropdown-toggle',
+            'id' => sprintf("%s", $this->makeSlug($label->getParent() ? $label->getParent()->getCategory(): $label->getCategory())),
+            'role' => 'button',
+            'data-toggle' => 'dropdown',
+            'aria-haspopup' => true,
+            'aria-expanded' => false
+        ];
+
+        foreach ($linkAttributes as $attributeKey => $attributeValue)
+        {
+            $item->setLinkAttribute($attributeKey, $attributeValue);
+        }
+
+        // set link's children attributes
+        $linkChildrenAttributes = [
+            'class' => 'dropdown-menu', // eg <ul>
+            'aria-labelledby' => sprintf("%s", $this->makeSlug($label->getCategory()))  // add sub menu style to new label
+        ];
+
+        foreach ($linkChildrenAttributes as $attributeKey => $attributeValue)
+        {
+            $item->setChildrenAttribute($attributeKey, $attributeValue);
+        }
+    }
+
+    /**
+     * Generate route depend on menu label and its hierarchy
+     *
+     * @param Menu $menuElement
+     * @return string
+     */
+    private function generateRoute(Menu $menuElement): string
+    {
+        if($menuElement->getParent() === null) {
+            return
+                'app_' . str_replace('-', '_', $this->makeSlug($menuElement->getCategory()));
+        }
 
         return
-            str_replace(' ', '+',
-                $this->generateRouteParameters($currentMenuLabel->getParent()) . ' ' . $currentMenuLabel->getSlug()
+            str_replace([' ', '-'], '_',
+                $this->generateRoute($menuElement->getParent()) . ' ' . $this->makeSlug($menuElement->getCategory())
             );
     }
+
+    /**
+     * Return generated slug based on label
+     *
+     * @param string $label
+     * @return string
+     */
+    private function makeSlug(string $label): string {
+        return strtolower(str_replace(' ', '-', $label));
+    }
 }
-
-
 
 /*
  * to fix template rendering problem:

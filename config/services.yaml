@@ -40,7 +40,7 @@ services:
 
     app.menu_builder:
         class: App\Menu\MenuBuilder
-        arguments: ["@knp_menu.factory", "@app.repository.menu"]
+        arguments: ["@knp_menu.factory", "@app.repository.menu", "@security.helper"]
         tags:
             - { name: knp_menu.menu_builder, method: mainMenu, alias: main } # The alias is what is used to retrieve the menu
 
