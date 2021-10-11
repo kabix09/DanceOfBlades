@@ -12,18 +12,22 @@
             <div>{{ avatar.nickname }}</div>
         </div>
         <div class="col-sm-2" style="margin: auto auto">
-            {% if isFriendship == true and friendship.accepteddate is null %}
-                <div>Invitation already sent</div>
-            {% elseif isFriendship == true and friendship.deleteddate is null and friendship.rejecteddate is null %}
+
+            {% if isFriendship == true and friendship.deleteddate is null and friendship.rejecteddate is null %}
                 {% if friendship.acceptedDate is not null %}
                     <div><a href="{{ path('app_friend_remove', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Remove friend</a></div>
-                {% elseif friendship.sentDate is not null %}
-                    <div><a href="{{ path('app_friend_accept_invitation', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Accept</a></div>
-                    <div><a href="{{ path('app_friend_reject_invitation', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Reject</a></div>
+                {% elseif friendship.acceptedDate is null %}
+                    {% if friendship.requester.nick == app.user.avatar[0].nick %}
+                        <div>Invitation already sent</div>
+                    {% else %}
+                        <div><a href="{{ path('app_friend_accept_invitation', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Accept</a></div>
+                        <div><a href="{{ path('app_friend_reject_invitation', {"requester": friendship.requester.nick, "addressee": friendship.addressee.nick}) }}">Reject</a></div>
+                    {% endif %}
                 {% endif %}
             {% else %}
                 <div><a href="{{ path('app_friend_add', { 'nick': avatar.nick }) }}">Add friend</a></div>
             {% endif %}
+
         </div>
     </div>
 {% endblock %}
