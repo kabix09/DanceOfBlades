@@ -1,6 +1,6 @@
 <div class="container">
     <div class="row">
-        <div class="col-sm-9 d-flex justify-content-between flex-wrap">
+        <div id="avatar_friends" class="col-sm-9 d-flex justify-content-between flex-wrap">
             {% for friendship in friendships %}
                 {% if friendship.addressee.id == app.user.avatar[0].id %}
                     {% set avatar = friendship.requester %}
@@ -15,7 +15,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="card-body">
-                                <h5 class="card-title">{{ avatar.nick }}</h5>
+                                <h5 class="card-title"><a href="{{ path('app_avatar_guest', {'nick': avatar.nick}) }}" style="text-decoration: none">{{ avatar.nick }}</a></h5>
                                 <p class="card-text">{{ avatar.race }} - {{ avatar.class }}</p>
                                 <p class="card-text"><small class="text-muted">level: {{ avatar.level }}</small></p>
                             </div>
@@ -28,8 +28,23 @@
             {% endfor %}
         </div>
 
-        <div class="col-sm-3" style="border-left: 2px solid linen">
-            <p><strong>Invitations</strong></p>
+        <div id="invitations_box" class="col-sm-3" style="border-left: 2px solid linen; ">
+            <p style="display: inline-block; position: relative;">
+                <strong>Invitations</strong>
+                <span id="notify_bubble" style="
+                    position: absolute;
+                    margin-left: 10px;
+                    padding: 2px 6px 2px 7px;
+                    top: 4px;
+                    background-color: green;
+                    color: white;
+                    font-size: 0.65em;
+                    border-radius: 50%;
+                    box-shadow: 1px 1px 1px gray;
+                    display: none">{{ notAcceptedInvitations|length }}</span>
+            </p>
+
+            <div id="invitations_list">
 
             {% for invitation in notAcceptedInvitations %}
 
@@ -42,11 +57,11 @@
                 <div class="card mb-3" style="width: 100%;">
                     <div class="row g-0">
                         <div class="col-md-3">
-                            <img src="{{ asset('uploads/avatar_image/' ~ invitator.image) }}" class="img-fluid rounded-start img-thumbnail"  alt="{{ invitator.nick }}" style="height: 100%; width: 100%; object-fit: contain;">
+                            <img src="{{ absolute_url(asset('uploads/avatar_image/' ~ invitator.image)) }}" class="img-fluid rounded-start img-thumbnail"  alt="{{ invitator.nick }}" style="height: 100%; width: 100%; object-fit: contain;">
                         </div>
                         <div class="col-md-7">
                             <div class="card-body">
-                                <h5 class="card-title">{{ invitator.nick }}</h5>
+                                <h5 class="card-title"><a href="{{ path('app_avatar_guest', {'nick': invitator.nick}) }}" style="text-decoration: none">{{ invitator.nick }}</a></h5>
                             </div>
                         </div>
                         <div class="col-md-2" style="text-align: center; margin: auto auto">
@@ -58,8 +73,78 @@
 
 
             {% endfor %}
+            </div>
         </div>
     </div>
-
-
 </div>
+
+{% block script %}
+    <script>
+        // Fetch the original resource served by the Symfony web API
+        fetch('{{ path('avatar_invitations_mercure') }}') // Has Link: <http://localhost:3000/.well-known/mercure>; rel="mercure"
+            .then(response => {
+                // Extract the hub URL from the Link header
+                const hubUrl = response.headers.get('Link').match(/<([^>]+)>;\s+rel=(?:mercure|"[^"]*mercure[^"]*")/)[1];
+
+                // Append the topic(s) to subscribe as query parameter
+                const hub = new URL(hubUrl, window.origin);
+
+                hub.searchParams.append('topic', 'http://localhost:8000/{{ app.user.avatar[0].nick }}/invitations');
+
+                // Subscribe to updates
+                const eventSource = new EventSource(hub);
+
+                eventSource.onmessage = event => {
+                    const invitations = JSON.parse(event.data);
+
+                    const invitationsBubble = document.getElementById('notify_bubble');
+                    const avatarInvitations = document.getElementById('invitations_list');
+
+                    // display notification bubble
+                    invitationsBubble.innerHTML = invitations.length;
+                    invitationsBubble.style.display = "inline";
+
+                    // create invitatin's boxes
+                    avatarInvitations.innerHTML = invitations.map((invitation) => {
+                        const avatarId = '{{ app.user.avatar[0].id }}';
+                        const invitator = invitation.addressee.id === avatarId ? invitation.requester : invitation.addressee;
+
+                        const imageLink = 'http://' + window.location.hostname + ':' + window.location.port + '/uploads/avatar_image/' + invitator.image;
+                        const acceptLink = '/user/friend/acceptInvitation/' + invitation.requester.nick + '/' + invitation.addressee.nick;
+                        const rejectLink = '/user/friend/denyInvitation/' + invitation.requester.nick + '/' + invitation.addressee.nick;
+                        const friendsPageLink = '/avatar/' + invitation.requester.nick;
+
+                        const content =
+                            '<div class="card mb-3" style="width: 100%;">' +
+                                '<div class="row g-0">' +
+                                    '<div class="col-md-3">' +
+                                        '<img src="' + imageLink + '" class="img-fluid rounded-start img-thumbnail"  alt="' + invitator.nick + '" style="height: 100%; width: 100%; object-fit: contain;">' +
+                                    '</div>' +
+                                    '<div class="col-md-7">' +
+                                        '<div class="card-body">' +
+                                            '<h5 class="card-title"><a href="' + friendsPageLink + '" style="text-decoration: none">' + invitator.nick + '</a></h5>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<div class="col-md-2" style="text-align: center; margin: auto auto">' +
+                                        '<a href="' + acceptLink + '" style="text-decoration: none">&#10004;</a>' +
+                                        '<a href="' + rejectLink + '" style="text-decoration: none">&#10060;</a>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>';
+
+                        return content;
+                    }).join('');
+                }
+            });
+
+            document.getElementById('invitations_list').onmouseover = () => {
+                const invitationsBubble = document.getElementById('notify_bubble');
+
+                if(invitationsBubble.style.display !== "none")
+                {
+                    invitationsBubble.innerHTML = 0;
+                    invitationsBubble.style.display = "none";
+                }
+            }
+    </script>
+{% endblock %}

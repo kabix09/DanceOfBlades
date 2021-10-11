@@ -22,6 +22,8 @@ Project is created with:
 * [Mailtrap](https://mailtrap.io/)
 
 ## Launch
+#### Common use 
+
 To run this project install [php](https://windows.php.net/download#php-7.4) interpreter and [symfony local server](https://symfony.com/doc/current/setup/symfony_server.html). 
 Next move to the directory where you have composer.json and update dependencies:
 ```
@@ -33,14 +35,25 @@ $ symfont server:start --no-tls
 ```
 Now everything is prepared. You can open your browser and go to localhost website. 
 
+#### With mercure feature
+To run this project with [Mercure](https://mercure.rocks/) you need to change environment to [Xampp](https://www.apachefriends.org/pl/index.html) and move project files into `htdocs` folder. 
+
+Next [install Mercure](https://mercure.rocks/docs/hub/install) package on your computer and add source path to PATH system variable depending on your operating system.
+Now run service in your bash using:
+```
+$ $env:MERCURE_PUBLISHER_JWT_KEY='mercureSecretToken'; $env:MERCURE_SUBSCRIBER_JWT_KEY='mercureSecretToken'; mercure run -config Caddyfile.dev
+```
+Set `mercureSecretToken` value on your secret key which is the same as `MERCURE_JWT_SECRET` variable in `.env` project file.
+
+Now everything is prepared. You can open your browser and go to localhost website. 
+
 ## Features
 * Menu
 * Login and register module
 * Email authentication
-* Friends module
+* Friends module - using [Mercure](https://mercure.rocks/) to broadcast new invitations in real-time from server
 #### To do
 * Use [EasyAdmin](https://symfony.com/bundles/EasyAdminBundle/current/index.html) to admin module
 * Use [Redis](https://redis.io/) to handle session
 * Use [RabbitMQ](https://www.rabbitmq.com/) to asynchronous messaging
-* Use [Mercure](https://symfony.com/doc/4.2/mercure.html) to broadcast data in real-time from server
 * Move to [docker](https://www.docker.com/) environment

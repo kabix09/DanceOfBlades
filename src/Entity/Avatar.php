@@ -8,6 +8,7 @@ use App\Validator\UniqueAvatarNick;
 use Doctrine\ORM\Mapping as ORM;
 use Ramsey\Uuid\Uuid;
 Use App\Repository\AvatarRepository;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Avatar
@@ -29,6 +30,7 @@ class Avatar
     /**
      * @var string
      *
+     * @Groups("avatar")
      * @ORM\Column(name="id", type="guid", nullable=false, options={"default"="newid()"})
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="IDENTITY")
@@ -38,6 +40,7 @@ class Avatar
     /**
      * @var string
      *
+     * @Groups("avatar")
      * @ORM\Column(name="nick", type="string", length=35, nullable=false)
      */
     private string $nick;
@@ -45,6 +48,7 @@ class Avatar
     /**
      * @var int
      *
+     * @Groups("avatar")
      * @ORM\Column(name="level", type="smallint", nullable=false, options={"default"="1"})
      */
     private int $level;
@@ -52,6 +56,7 @@ class Avatar
     /**
      * @var string
      *
+     * @Groups("avatar")
      * @ORM\Column(name="race", type="string", length=15, nullable=false)
      * @CheckAvatarRace()
      */
@@ -60,6 +65,7 @@ class Avatar
     /**
      * @var string
      *
+     * @Groups("avatar")
      * @ORM\Column(name="class", type="string", length=15, nullable=false)
      * @CheckAvatarClass()
      */
@@ -68,6 +74,7 @@ class Avatar
     /**
      * @var string|null
      *
+     * @Groups("avatar")
      * @ORM\Column(name="gift", type="string", length=25, nullable=true)
      */
     private ?string $gift;
@@ -75,6 +82,7 @@ class Avatar
     /**
      * @var string|null
      *
+     * @Groups("avatar")
      * @ORM\Column(name="specialization", type="string", length=25, nullable=true)
      */
     private ?string $specialization;
@@ -82,6 +90,7 @@ class Avatar
     /**
      * @var string|null
      *
+     * @Groups("avatar")
      * @ORM\Column(name="nickname", type="string", length=30, nullable=true)
      */
     private ?string $nickname;
@@ -89,6 +98,7 @@ class Avatar
     /**
      * @var int
      *
+     * @Groups("avatar")
      * @ORM\Column(name="coins", type="integer", nullable=false, options={"default"="5000"})
      */
     private int $coins;
@@ -106,6 +116,7 @@ class Avatar
     /**
      * @var string|null
      *
+     * @Groups("avatar")
      * @ORM\Column(name="image", type="string", nullable=true)
      */
     private ?string $image;

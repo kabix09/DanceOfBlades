@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\Discovery;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
@@ -165,6 +166,19 @@ class AvatarController extends AbstractController
             'changeImageForm' => $form->createView(),
             'error' => $error
         ]);
+    }
+
+    /**
+     * @Route("/avatar/invitations", name="avatar_invitations_mercure")
+     * @param Request $request
+     * @param Discovery $discovery
+     * @return JsonResponse
+     */
+    public function avatarInvitations(Request $request, Discovery $discovery)
+    {
+        $discovery->addLink($request);
+
+        return $this->json(['message' => 'get mercure hub link']);
     }
 
     /**

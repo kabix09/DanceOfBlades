@@ -6,6 +6,7 @@ use App\Repository\FriendshipRepository;
 use App\Types\MyDateTime;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Friendship
@@ -28,6 +29,8 @@ class Friendship
     /**
      * @var Avatar
      *
+     * @Groups("friendship")
+     *
      * @ORM\Id
      * @ORM\OneToOne(targetEntity="Avatar")
      * @ORM\JoinColumn(nullable=false)
@@ -36,6 +39,8 @@ class Friendship
 
     /**
      * @var Avatar
+     *
+     * @Groups("friendship")
      *
      * @ORM\Id
      *
@@ -47,6 +52,8 @@ class Friendship
     /**
      * @var DateTime
      *
+     * @Groups("friendship")
+     *
      * @ORM\Id
      *
      * @ORM\Column(name="sent_date", type="mydatetime", nullable=false)
@@ -56,6 +63,7 @@ class Friendship
     /**
      * @var DateTime | null
      *
+     * @Groups("friendship")
      * @ORM\Column(name="accepted_date", type="datetime", nullable=true)
      */
     private ?DateTime $acceptedDate;
@@ -63,6 +71,7 @@ class Friendship
     /**
      * @var DateTime | null
      *
+     * @Groups("friendship")
      * @ORM\Column(name="rejected_date", type="datetime", nullable=true)
      */
     private ?DateTime $rejectedDate;
@@ -70,9 +79,17 @@ class Friendship
     /**
      * @var DateTime | null
      *
+     * @Groups("friendship")
      * @ORM\Column(name="deleted_date", type="datetime", nullable=true)
      */
     private ?DateTime $deletedDate;
+
+    public function __construct()
+    {
+        $this->acceptedDate = null;
+        $this->rejectedDate = null;
+        $this->deletedDate = null;
+    }
 
     public function getRequester(): ?Avatar
     {

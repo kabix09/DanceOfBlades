@@ -14,6 +14,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -59,9 +61,10 @@ class FriendsController extends AbstractController
      * @ParamConverter(name="invitedAvatar", options={"mapping": {"nick": "nick"}})
      * @param Avatar $invitedAvatar
      * @param FriendshipRepository $friendshipRepository
+     * @param HubInterface $hub
      * @return RedirectResponse
      */
-    public function addToFriends(Avatar $invitedAvatar, FriendshipRepository $friendshipRepository)
+    public function addToFriends(Avatar $invitedAvatar, FriendshipRepository $friendshipRepository, HubInterface $hub)
     {
         // todo: sent invitation for queue (messenger - rabbitMQ)
 
@@ -77,6 +80,15 @@ class FriendsController extends AbstractController
 
             $this->entityManager->persist($newFriendship);
             $this->entityManager->flush();
+
+            $update = new Update(
+                sprintf('http://localhost:8000/%s/invitations', $invitedAvatar->getNick()),
+                $this->json($friendshipRepository->findInvitations($invitedAvatar), 200, [], [
+                    'groups' => ['friendship', 'avatar'],
+                ])->getContent()
+            );
+
+            $hub->publish($update);
         }
 
         return $this->redirectToRoute('app_user_profile');
