@@ -10,3 +10,6 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
+###> GeoIP2 mndb file
+/private
+###< GeoIP2 mndb file

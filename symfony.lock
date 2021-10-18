@@ -5,6 +5,9 @@
     "brick/math": {
         "version": "0.9.3"
     },
+    "composer/ca-bundle": {
+        "version": "1.2.11"
+    },
     "composer/package-versions-deprecated": {
         "version": "1.11.99.2"
     },
@@ -97,6 +100,9 @@
     "gedmo/doctrine-extensions": {
         "version": "v3.1.0"
     },
+    "geoip2/geoip2": {
+        "version": "v2.11.0"
+    },
     "knplabs/knp-components": {
         "version": "v3.1.0"
     },
@@ -129,6 +135,12 @@
     },
     "lorenzo/pinky": {
         "version": "1.0.5"
+    },
+    "maxmind-db/reader": {
+        "version": "v1.11.0"
+    },
+    "maxmind/web-service-common": {
+        "version": "v0.8.1"
     },
     "monolog/monolog": {
         "version": "1.26.1"

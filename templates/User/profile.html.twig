@@ -99,6 +99,7 @@
                 <div style="padding: 10px;">
                     <h3><strong>Security</strong></h3>
                     <div>Last login: {{ user.lastLoginDate | date("d/m/Y H:i:s") }}</div>
+                    <div><a href="{{ path('app_user_log') }}">Logs journal</a></div>
                     <div><a href="{{ path('app_user_change_email') }}">change email</a></div>
                     <div><a href="{{ path('app_user_change_password') }}">change password</a></div>
                 </div>

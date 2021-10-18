@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Service\Director\LogDirector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -57,9 +58,20 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
      * @var Environment
      */
     private Environment $twig;
+    /**
+     * @var LogDirector
+     */
+    private LogDirector $logDirector;
 
-
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, UserPasswordEncoderInterface $userPasswordEncoder, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, Environment $twig, string $appCsrfToken)
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository,
+        UserPasswordEncoderInterface $userPasswordEncoder,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        RouterInterface $router,
+        Environment $twig,
+        LogDirector $logDirector,
+        string $appCsrfToken)
     {
         $this->userRepository = $userRepository;
         $this->userPasswordEncoder = $userPasswordEncoder;
@@ -68,6 +80,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
         $this->appCsrfToken = $appCsrfToken;
         $this->entityManager = $entityManager;
         $this->twig = $twig;
+        $this->logDirector = $logDirector;
     }
 
     public function supports(Request $request)
@@ -111,9 +124,15 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
     {
         /** @var User $loginUser */
         $loginUser = $token->getUser();
-
         $loginUser->setLastLoginDate(new \DateTime('now'));
+
         $this->entityManager->persist($loginUser);
+
+        // todo: refactor using event and subscriber
+        $this->entityManager->persist(
+            $this->logDirector->newDirectionLog($loginUser)
+        );
+
         $this->entityManager->flush();
 
         if($targetPath = $this->getTargetPath($request->getSession(), $providerKey))
