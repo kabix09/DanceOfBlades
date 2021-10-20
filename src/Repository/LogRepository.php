@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Log;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -18,5 +19,15 @@ class LogRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Log::class);
+    }
+
+    public function getUserLogsHistory(User $user)
+    {
+        return $this->createQueryBuilder('l')
+            ->andWhere('l.user = :user')
+            ->addOrderBy('l.startSessionDate', 'DESC')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
     }
 }

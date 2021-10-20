@@ -41,7 +41,7 @@
                     font-size: 0.65em;
                     border-radius: 50%;
                     box-shadow: 1px 1px 1px gray;
-                    display: none">{{ notAcceptedInvitations|length }}</span>
+                    display: {{ newInvitations|length == 0 ? "none": "inline" }}">{{ newInvitations|length }}</span>
             </p>
 
             <div id="invitations_list">
@@ -101,11 +101,15 @@
                     const avatarInvitations = document.getElementById('invitations_list');
 
                     // display notification bubble
-                    invitationsBubble.innerHTML = invitations.length;
+                        // increment
+                    var value = invitationsBubble.innerHTML;
+                    value++;
+                    invitationsBubble.innerHTML = value;
+
                     invitationsBubble.style.display = "inline";
 
-                    // create invitatin's boxes
-                    avatarInvitations.innerHTML = invitations.map((invitation) => {
+                    //
+                    const generateBox = (invitation) => {
                         const avatarId = '{{ app.user.avatar.id }}';
                         const invitator = invitation.addressee.id === avatarId ? invitation.requester : invitation.addressee;
 
@@ -133,7 +137,10 @@
                             '</div>';
 
                         return content;
-                    }).join('');
+                    };
+
+                    // create invitatin's boxes
+                    avatarInvitations.innerHTML += generateBox(invitations);
                 }
             });
 

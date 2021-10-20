@@ -7,6 +7,7 @@ use App\Entity\Avatar;
 use App\Entity\Friendship;
 use App\Entity\User;
 use App\Repository\FriendshipRepository;
+use App\Repository\LogRepository;
 use App\Types\MyDateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -40,18 +41,30 @@ class FriendsController extends AbstractController
      * @Route("/user/friends", name="app_user_friend")
      * @IsGranted("ROLE_USER")
      * @param FriendshipRepository $friendshipRepository
+     * @param LogRepository $logRepository
      * @return Response
      */
-    public function showFriends(FriendshipRepository $friendshipRepository)
+    public function showFriends(FriendshipRepository $friendshipRepository, LogRepository $logRepository)
     {
         /** @var User $user */
         $user = $this->getUser();
         $friendships = $friendshipRepository->findFriends($user->getAvatar());
         $notAcceptedInvitations = $friendshipRepository->findInvitations($user->getAvatar());
 
+        // invitations where send time is grater than last login
+        $logins = $logRepository->getUserLogsHistory($user);
+        $previousLoginDate = count($logins) >= 2
+            ? $logins[1]->getStartSessionDate()
+            : $logins[0]->getStartSessionDate();
+
+        $newInvitations = array_filter($notAcceptedInvitations, function ($invitation) use ($previousLoginDate) {
+            return $invitation->getSentDate() > $previousLoginDate;
+        });
+
         return $this->render('user/profile/friends.html.twig', [
             'friendships' => $friendships,
-            'notAcceptedInvitations' => $notAcceptedInvitations
+            'notAcceptedInvitations' => $notAcceptedInvitations,
+            'newInvitations' => $newInvitations
         ]);
     }
 
@@ -81,9 +94,10 @@ class FriendsController extends AbstractController
             $this->entityManager->persist($newFriendship);
             $this->entityManager->flush();
 
+
             $update = new Update(
                 sprintf('http://localhost:8000/%s/invitations', $invitedAvatar->getNick()),
-                $this->json($friendshipRepository->findInvitations($invitedAvatar), 200, [], [
+                $this->json($newFriendship, 200, [], [
                     'groups' => ['friendship', 'avatar'],
                 ])->getContent()
             );

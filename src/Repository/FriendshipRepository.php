@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Avatar;
 use App\Entity\Friendship;
 use App\Entity\User;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Security;
@@ -30,36 +31,6 @@ class FriendshipRepository extends ServiceEntityRepository
 
     public function findFriends(Avatar $avatar) : array
     {
-
-//        $friendshipRelation = [];
-//        $friendshipRelation = array_merge($friendshipRelation, $this->createQueryBuilder('f')
-//            ->andWhere('f.addressee = :val')
-//            ->andWhere('f.acceptedDate IS NOT NULL')
-//            ->setParameter('val', $avatar)
-//            ->getQuery()
-//            ->getResult());
-//
-//        $friendshipRelation = array_merge($friendshipRelation, $this->createQueryBuilder('f')
-//            ->andWhere('f.requester = :val')
-//            ->andWhere('f.acceptedDate IS NOT NULL')
-//            ->setParameter('val', $avatar)
-//            ->getQuery()
-//            ->getResult());
-//
-//        $result = [];
-//        /** @var Friendship $friendship */
-//        foreach ($friendshipRelation as $friendship)
-//        {
-//            if($friendship->getRequester()->getId() === $avatar->getId())
-//            {
-//                $result[] = $friendship->getAddressee();
-//            }else if($friendship->getAddressee()->getId() === $avatar->getId())
-//            {
-//                $result[] = $friendship->getRequester();
-//            }
-//        }
-//        return $result;
-
         return $this->createQueryBuilder('f')
             ->andWhere('f.addressee = :val OR f.requester = :val')
             ->andWhere('f.acceptedDate IS NOT NULL')
