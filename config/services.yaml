@@ -14,6 +14,7 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
             $publicAvatarFilesystem: '@oneup_flysystem.public_avatar_filesystem_filesystem'
+            $publicMapFilesystem: '@oneup_flysystem.public_map_filesystem_filesystem'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -60,6 +61,10 @@ services:
         arguments:
             $appCsrfToken: '%env(CSRF_TOKEN)'
 
+    App\Form\Map\MapFormType:
+        arguments:
+            $appCsrfToken: '%env(CSRF_TOKEN)'
+
     App\Controller\SecurityController:
         arguments:
             $emailVerifyKey: '%env(EMAIL_VERIFY_KEY)%'
@@ -68,3 +73,5 @@ services:
         arguments:
             $mailAddress: '%env(SITE_EMAIL_ADDRESS)%'
             $mailOwner: '%env(SITE_EMAIL_OWNER)%'
+
+    Symfony\Component\Asset\Context\RequestStackContext: '@assets.context'

@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Map{% endblock %}
+
+{% block body %}
+
+    <div class="jumbotron d-flex align-items-center" style="height: 85%;">
+        <div class="container" style="width: 25rem;">   <!--  padding: 15px; margin: auto; margin-top: 30px; -->
+
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Create map</h3>
+                    <p class="card-text">
+                        {{ include('form/map/_form.html.twig', {
+                            map: editMap,
+                            button_text: 'Update'
+                        }) }}
+                        {# action_path: path('app_edit_map', {'id': editMap.vars.data.id }), #}
+
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    {{ parent() }}
+    <script src="{{ asset('js/map_form.js') }}"></script>
+{% endblock %}

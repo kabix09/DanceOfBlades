@@ -40,5 +40,45 @@ class SelectionRepository extends ServiceEntityRepository
         ;
     }
 
+    public function getMapTerrains()
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :val')
+            ->setParameter('val', 'MAP_TERRAIN')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 
+    public function getMapTerrainsByParent(string $parentId)
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :val')
+            ->andWhere('t.dependencyTag = :p OR t.dependencyTag is null')
+            ->setParameter('val', 'MAP_TERRAIN')
+            ->setParameter('p', $parentId)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function getMapAreas()
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :val')
+            ->setParameter('val', 'MAP_AREA')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function getMapClimates()
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :val')
+            ->setParameter('val', 'MAP_CLIMATE')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

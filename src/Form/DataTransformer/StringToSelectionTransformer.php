@@ -38,12 +38,11 @@ class StringToSelectionTransformer implements DataTransformerInterface
     public function transform($value)
     {
         // change string for object expected by form element
-
         if($value === null)
             return $value;
 
         $callback = $this->callback;
-        return $callback($this->selectionRepository, $value);
+        return $callback($this->selectionRepository, $value->getName());
     }
 
     /**
@@ -52,6 +51,7 @@ class StringToSelectionTransformer implements DataTransformerInterface
     public function reverseTransform($value)
     {
         // pass string value from form without changing to mapped object
+        // from form to entity
         return $value;
     }
 }

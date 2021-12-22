@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block container %}
+    <div class="row">
+        <div class="row">
+            <div class="col-9">
+            </div>
+            <div class="col-3">
+                <div class="input-group my-3 mx-auto" style="">
+                    <input class="form-control py-2 border-right-0 border" type="search" placeholder="Type something..." id="example-search-input">
+                    <span class="input-group-append">
+                        <button class="btn btn-outline-primary rounded-right" type="button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-light table-hover caption-top">
+        <caption>Maps: </caption>
+        <thread>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Region</th>
+            <th scope="col">Area</th>
+            <th scope="col">Terrain</th>
+            <th scope="col">Climate</th>
+            <th scope="col">Constraints</th>
+            <th scope="col">Level</th>
+            {% if is_granted("ROLE_MAP_MANAGER") %}
+                <th scope="col"></th>
+                <th scope="col"></th>
+            {% endif %}
+        </thread>
+
+        <tbody>
+        {# todo: add link to avatar achievements page #}
+        {% for map in maps %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td><a href="{{ path('app_map_profile', {'slug': map.slug}) }}">{{ map.name }}</a></td>
+                <td>{{ map.region | default('')}}</td>
+                <td>{{ map.areaType }}</td>
+                <td>{{ map.terrainType }}</td>
+                <td>{{ map.climate | default('') }}</td>
+                <td>{{ map.noBattleZone }}</td>
+                <td>{{ map.dangerousLevel }}</td>
+                {% if is_granted("ROLE_MAP_MANAGER") %}
+                    <td>    <a href="{{ path('app_edit_map', {'slug': map.slug}) }}" style="text-decoration: none">&#xf044;</a></td>
+                    <td>    <a href="{{ path('app_delte_map', {'slug': map.slug}) }}" style="text-decoration: none">&#10060;</a></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {{ knp_pagination_render(maps) }}
+{% endblock %}

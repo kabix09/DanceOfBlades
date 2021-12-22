@@ -25,6 +25,9 @@
                 <li class="list-group-item"><a href="#statistics">Statistics</a></li>
                 <li class="list-group-item"><a href="#friends">Friends</a></li>
                 <li class="list-group-item"><a href="#settings">Settings</a></li>
+                {% if is_granted("ROLE_ADMIN") %}
+                    <li class="list-group-item"><a href="#admin">Managements</a></li>
+                {% endif %}
             </ul>
         </div>
         <div class="col-sm-10">
@@ -105,13 +108,20 @@
                 </div>
 
             </div>
+
+            <div id="admin" class="col w-100" style="display: none">
+                <p>
+                <h1><strong>Managements</strong></h1>
+                <div><a href="{{ path('app_create_map') }}">Create map</a></div>
+                </p>
+            </div>
         </div>
         </div>
 {% endblock %}
 
 {% block script %}
     <script>
-        const userMenuHashs = ['my', 'achievements', 'statistics', 'friends', 'settings'];
+        const userMenuHashs = ['my', 'achievements', 'statistics', 'friends', 'settings', 'admin'];
 
         if(window.location.hash) {
             var element = document.getElementById(window.location.hash.substring(1));

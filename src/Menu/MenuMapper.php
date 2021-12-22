@@ -7,7 +7,8 @@ final class MenuMapper
 {
      private const MAPPER = [
          'app_sign_in' => 'app_login',
-         'app_profile' => 'app_user_profile'
+         'app_profile' => 'app_user_profile',
+         'app_world_maps' => 'app_list_map',
      ];
 
      public function __construct() {}

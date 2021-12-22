@@ -38,3 +38,5 @@ security:
         - { path: ^/avatar/changeImage, roles: IS_AUTHENTICATED_FULLY }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_USER, ROLE_MAP_MANAGER]

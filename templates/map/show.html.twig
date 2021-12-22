@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block container %}
+
+    <div class="row">
+        <div class="col-6">
+            <img src="{{ asset('uploads/map_image/' ~ map.image) }}" />
+        </div>
+        <div class="col-6">
+            <div><strong>{{ map.name }}</strong></div></br>
+            <div>{{ map.description }}</div></br>
+            <div>Region: {{ map.region | default }}</div></br>
+            <div>Dangerous level: {{ map.dangerousLevel }}</div></br>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    {{ parent() }}
+{% endblock %}
