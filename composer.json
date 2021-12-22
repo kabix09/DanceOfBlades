@@ -12,6 +12,7 @@
         "doctrine/orm": "^2.9",
         "knplabs/knp-menu-bundle": "^3.1",
         "league/html-to-markdown": "^5.0",
+        "oneup/flysystem-bundle": "^4.1",
         "ramsey/uuid": "^4.2",
         "sensio/framework-extra-bundle": "^6.1",
         "stof/doctrine-extensions-bundle": "^1.6",

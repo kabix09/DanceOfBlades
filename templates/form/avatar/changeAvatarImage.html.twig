@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Change image{% endblock %}
+
+{% block body %}
+
+    <div class="jumbotron d-flex align-items-center" style="height: 85%;">
+        <div class="container" style="width: 25rem;">   <!--  padding: 15px; margin: auto; margin-top: 30px; -->
+            {% if error %}
+                <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Change image</h3>
+                    <p class="card-text">
+                        {{ form_start(changeImageForm, {'action': path('app_avatar_change_image'), 'method': 'POST'})}}
+                        {{ form_row(changeImageForm.newImage) }}
+
+                        <button class="btn btn-primary btn-block" type="submit" style="margin-top: 10px;">
+                            Change
+                        </button>
+
+                        {{ form_end(changeImageForm) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

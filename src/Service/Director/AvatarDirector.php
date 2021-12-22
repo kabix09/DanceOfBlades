@@ -38,12 +38,24 @@ class AvatarDirector
         $image = $avatarModel->getImage();
         if($image)
         {
-            $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
-            $newName = Urlizer::urlize($originalName) . '-' . uniqid('', true) . '.' . $image->guessExtension();
-
-            $this->avatar->setImage($newName);
+            $this->setImage($image);
         }
 
+        return $this->avatar;
+    }
+
+    public function setImage(UploadedFile $image, ?Avatar $avatar = null): Avatar
+    {
+        $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+        $newName = Urlizer::urlize($originalName) . '-' . uniqid('', true) . '.' . $image->guessExtension();
+
+        if($avatar)
+        {
+            $avatar->setImage($newName);
+            return $avatar;
+        }
+
+        $this->avatar->setImage($newName);
         return $this->avatar;
     }
 }

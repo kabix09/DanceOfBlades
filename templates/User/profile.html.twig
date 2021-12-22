@@ -1,7 +1,137 @@
 {% extends 'base.html.twig' %}
 
 {% block container %}
-    <div style="background-color: lightsteelblue; height: 100%; width: 100%">
-        <a href="{{ path('app_logout') }}">logout</a>
+    <div class="row" style="min-height: 200px;">
+        <div class="col-sm-2" style="max-height: 100%">
+            <img src="{{ absolute_url(asset('uploads/avatar_image/' ~ avatar.image))}}" alt="{{ avatar.image }}" class="img-thumbnail" style="width:100%; max-width: 100%; height: 100%; max-height: 100%; object-fit: contain;">
+        </div>
+        <div class="col-sm" style="margin: auto auto">
+            <h2><strong>{{ avatar.nick }}</strong></h2>
+            <h4>{{ avatar.level }}</h4>
+            <div class="w-100"></div>
+            <div>{{ avatar.nickname }}</div>
+        </div>
+        <div class="col-sm-2" style="margin: auto auto">
+            <div><a href="{{ path('app_avatar_change_image') }}">change image</a></div>
+            <br>
+            <div><a href="{{ path('app_logout') }}">logout</a></div>
+        </div>
     </div>
+    <div class="row">
+        <div class="col-sm-2">
+            <ul class="list-group">
+                <li class="list-group-item"><a href="#my">My</a></li>
+                <li class="list-group-item"><a href="#achievements">Achievements</a></li>
+                <li class="list-group-item"><a href="#statistics">Statistics</a></li>
+                <li class="list-group-item"><a href="#friends">Friends</a></li>
+                <li class="list-group-item"><a href="#settings">Settings</a></li>
+            </ul>
+        </div>
+        <div class="col">
+            <div id="my" class="col w-100" style="display: none">
+                <div style="padding: 10px;">
+                    <h3><strong>Avatar</strong></h3>
+                    <div>Nick: {{ avatar.nick }}</div>
+                    <div>Race: {{ avatar.race }}</div>
+                    <div>Class: {{ avatar.class }}</div>
+                    <div>Gift: {{ avatar.gift|default }}</div>
+                    <div>Specialization: {{ avatar.specialization }}</div>
+                    <div>Nickname: {{ avatar.nickname }}</div>
+                    <div>Cash: {{ avatar.coins }}</div>
+                </div>
+            </div>
+
+            <div id="achievements" class="col w-100" style="display: none">
+                <p>
+                    <h1><strong>Achievements</strong></h1>
+                    TO DO
+                </p>
+            </div>
+
+            <div id="statistics" class="col w-100" style="display: none">
+                <p>
+                    <h1><strong>Statistics</strong></h1>
+                </p>
+
+                <div style="padding: 10px;">
+                    <h3><strong>PVP</strong></h3>
+                    <div>Battles: 40</div>
+                    <div>Wins: 12</div>
+                    <div>Defeats: 27</div>
+                    <div>Draws: 1</div>
+                </div>
+
+                <div style="padding: 10px;">
+                    <h3><strong>Tournaments</strong></h3>
+                </div>
+
+                <div style="padding: 10px;">
+                    <h3><strong>Raids</strong></h3>
+                </div>
+
+                <div style="padding: 10px;">
+                    <h3><strong>Events</strong></h3>
+                </div>
+            </div>
+
+            <div id="friends" class="col w-100" style="display: none">
+                <p>
+                    <h1><strong>Friends</strong></h1>
+                    TO DO
+                </p>
+            </div>
+
+            <div id="settings" class="col w-100" style="display: none">
+                <p>
+                    <h1><strong>Settings</strong></h1>
+                </p>
+                <div style="padding: 10px;">
+                    <h3><strong>User</strong></h3>
+                    <div>Email: {{ user.email }}</div>
+                    <div>Create account: {{ user.createAccountDate|date("d/m/Y H:i:s") }}</div>
+                    {% if user.isActive %}
+                        <div>Status: <strong>active</strong></div>
+                    {% else %}
+                        <div>Status: <strong>inactive</strong></div>
+                    {% endif %}
+
+                </div>
+                <div style="padding: 10px;">
+                    <h3><strong>Security</strong></h3>
+                    <div>Last login: {{ user.lastLoginDate | date("d/m/Y H:i:s") }}</div>
+                    <div><a href="{{ path('app_user_change_email') }}">change email</a></div>
+                    <div><a href="{{ path('app_user_change_password') }}">change password</a></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        const userMenuHashs = ['my', 'achievements', 'statistics', 'friends', 'settings'];
+
+        if(window.location.hash) {
+            var element = document.getElementById(window.location.hash.substring(1));
+            element.style.display = 'block';
+        }else {
+            document.getElementById('my').style.display = 'block';
+        }
+
+        window.onhashchange = function(){
+            if(userMenuHashs.find( hash => hash === location.hash.substring(1)))
+            {
+                userMenuHashs.forEach(function (hash, index) {
+                    document.getElementById(hash).style.display = 'none';
+                })
+
+                document.getElementById(location.hash.substring(1)).style.display = 'block';
+            }else {
+                document.getElementById('my').style.display = 'block';
+            }
+
+        }
+    </script>
+
 {% endblock %}

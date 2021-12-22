@@ -106,8 +106,6 @@
     "laminas/laminas-code": {
         "version": "4.4.2"
     },
-<<<<<<< HEAD
-=======
     "lcobucci/clock": {
         "version": "2.0.0"
     },
@@ -117,9 +115,11 @@
     "league/flysystem": {
         "version": "2.2.3"
     },
->>>>>>> 930f36a (Refactor email sending module)
     "league/html-to-markdown": {
         "version": "5.0.0"
+    },
+    "league/mime-type-detection": {
+        "version": "1.7.0"
     },
     "lorenzo/pinky": {
         "version": "1.0.5"
@@ -129,6 +129,18 @@
     },
     "nikic/php-parser": {
         "version": "v4.12.0"
+    },
+    "oneup/flysystem-bundle": {
+        "version": "4.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "4.0",
+            "ref": "3ae1b83985e89138f5443bbc2d9b8c074b497d49"
+        },
+        "files": [
+            "./config/packages/oneup_flysystem.yaml"
+        ]
     },
     "psr/cache": {
         "version": "1.0.1"

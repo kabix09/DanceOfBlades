@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Form\Avatar;
 
 use App\Entity\Selection;
+use App\Form\DataTransformer\ImageFormTypeToUploadFileTransformer;
+use App\Form\DataTransformer\StringToSelectionTransformer;
 use App\Form\Dto\CreateAvatarModel;
 use App\Repository\SelectionRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -71,25 +73,24 @@ class CreateAvatarFormType extends AbstractType
                     ])
                 ]
             ])
-            ->add('image', FileType::class, [
-                'required' => false,
-                'constraints' => [
-                    new Image([
-                        'maxSize' => ini_get('upload_max_filesize'),
-                        'maxSizeMessage' => sprintf('Image musn\'t be bigger than %s', ini_get('upload_max_filesize'))
-                    ])
-                ]
-            ])
+            ->add('image', ChangeAvatarImageFormType::class)
         ;
+
+        $builder->get('race')->addModelTransformer(new StringToSelectionTransformer($this->selectionRepository, $options['finder_selection_callback']));
+        $builder->get('class')->addModelTransformer(new StringToSelectionTransformer($this->selectionRepository, $options['finder_selection_callback']));
+        $builder->get('image')->addModelTransformer(new ImageFormTypeToUploadFileTransformer());
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
-        return [
+        return $resolver->setDefaults([
             'data_class' => CreateAvatarModel::class,
             'csrf_protection' => true,
             'csrf_field_name' => '_csrf',
-            'csrf_token_id' => $this->appCsrfToken
-        ];
+            'csrf_token_id' => $this->appCsrfToken,
+            'finder_selection_callback' => function(SelectionRepository $selectionRepository, string $value) {
+                return $selectionRepository->findOneBy(['name' => $value]);
+            }
+        ]);
     }
 }
