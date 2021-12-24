@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Form\Dto\RegisterUserModel;
+use App\Repository\SelectionRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -17,8 +18,12 @@ class RegisterFormType extends AbstractType
     /**
      * @var string
      */
-    private $appCsrfToken;
+    private string $appCsrfToken;
 
+    /**
+     * RegisterFormType constructor.
+     * @param string $appCsrfToken
+     */
     public function __construct(string $appCsrfToken)
     {
         $this->appCsrfToken = $appCsrfToken;

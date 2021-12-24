@@ -14,8 +14,6 @@ use App\Security\LoginFormAuthenticator;
 use App\Service\Director\UserDirector;
 use App\Service\Mailer;
 use App\Service\Token;
-use App\Service\Builder\UserKeyBuilder;
-use App\Service\Builder\UserBuilder;
 use App\Service\Director\UserKeyDirector;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;

@@ -54,6 +54,10 @@ services:
         arguments:
             $appCsrfToken: '%env(CSRF_TOKEN)'
 
+    App\Form\Avatar\CreateAvatarFormType:
+        arguments:
+            $appCsrfToken: '%env(CSRF_TOKEN)'
+
     App\Controller\SecurityController:
         arguments:
             $emailVerifyKey: '%env(EMAIL_VERIFY_KEY)%'

@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Avatars{% endblock %}
+
+{% block container %}
+    <table class="table table-light table-hover caption-top">
+        <caption>List of users</caption>
+        <thread>
+            <th scope="col">#</th>
+            <th scope="col">Nick</th>
+            <th scope="col">Nickname</th>
+            <th scope="col">Race</th>
+            <th scope="col">Class</th>
+            <th scope="col">Gift</th>
+            <th scope="col">Specialization</th>
+            <th scope="col">Level</th>
+        </thread>
+
+        <tbody>
+        {# todo: add link to avatar achievements page #}
+            {% for avatar in avatars %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td>{{ avatar.nick }}</td>
+                    <td>{{ avatar.nickname }}</td>
+                    <td>{{ avatar.race }}</td>
+                    <td>{{ avatar.class }}</td>
+                    <td>{{ avatar.gift }}</td>
+                    <td>{{ avatar.specialization }}</td>
+                    <td>{{ avatar.level }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -84,14 +84,14 @@ class Avatar
     /**
      * @var int
      *
-     * @ORM\Column(name="coins", type="integer", nullable=false)
+     * @ORM\Column(name="coins", type="integer", nullable=false, options={"default"="5000"})
      */
     private int $coins;
 
     /**
      * @var User
      *
-     * @ORM\ManyToOne(targetEntity="User")
+     * @ORM\ManyToOne(targetEntity="User", fetch="EXTRA_LAZY")
      * @ORM\JoinColumns({
      *   @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      * })
@@ -103,9 +103,8 @@ class Avatar
      */
     public function __construct()
     {
-        $this->id = Uuid::uuid4()->toString();
         $this->level = 1;
-        $this->coins = 0;
+        $this->coins = 5000;
     }
 
     public function getId(): ?string
@@ -214,7 +213,7 @@ class Avatar
         return $this->user;
     }
 
-    public function setUser(?User $user): self
+    public function setUser(User $user): self
     {
         $this->user = $user;
 

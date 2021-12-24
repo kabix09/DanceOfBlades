@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Avatar;
 use App\Entity\User;
+use App\Repository\AvatarRepository;
 use App\Repository\MenuRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,8 +24,10 @@ class MainController extends AbstractController
     /**
      * @IsGranted("ROLE_USER")
      * @Route("/user/profile", name="app_user_profile")
+     * @param AvatarRepository $avatarRepository
+     * @return Response
      */
-    public function profile(): Response
+    public function profile(AvatarRepository $avatarRepository): Response
     {
         /**
          * @var User $user
@@ -34,9 +38,20 @@ class MainController extends AbstractController
         {
             return $this->render('user/inactiveAccount.html.twig');
         }
-        // todo: else if is active and banned - render banned banner
 
-        return $this->render('user/profile.html.twig');
+        /**
+         * @var Avatar $avatar
+         */
+        $avatar = $avatarRepository->findOneBy(['user' => $user]);
+        if(is_null($avatar))
+        {
+            return $this->redirectToRoute('app_new_avatar');
+        }
+
+        return $this->render('user/profile.html.twig', [
+            'user' => $user,
+            'avatar' => $avatar
+        ]);
     }
 
     /**

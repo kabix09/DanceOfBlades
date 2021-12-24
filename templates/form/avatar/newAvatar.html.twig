@@ -1,0 +1,32 @@
+{%  extends 'base.html.twig' %}
+{% block title %}Create avatar{% endblock %}
+
+{% block body %}
+
+    <div class="jumbotron d-flex align-items-center" style="height: 85%;">
+        <div class="container" style="width: 25rem;">   <!--  padding: 15px; margin: auto; margin-top: 30px; -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Create avatar</h3>
+                    <p class="card-text">
+                        {{ form_start(avatarForm, {'action': path('app_new_avatar'), 'method': 'POST', 'enctype':'multipart/form-data'})}}
+
+                            {{ form_row(avatarForm.nick) }}
+                            {{ form_row(avatarForm.race) }}
+                            {{ form_row(avatarForm.class) }}
+                            {{ form_row(avatarForm.image) }}
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button class="btn btn-primary btn-block" type="submit">
+                                    Create
+                                </button>
+                            </div>
+                        {{ form_end(avatarForm) }}
+
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
