@@ -1,0 +1,13 @@
+{{ form_start(event, {'method': "POST"}) }}
+    {{ form_row(event.name) }}
+    {{ form_row(event.description) }}
+    {{ form_row(event.level) }}
+    {{ form_row(event.registrationOpeningDate) }}
+    {{ form_row(event.startEventDate) }}
+    {{ form_row(event.endEventDate) }}
+    {{ form_row(event.type) }}
+
+    <button class="btn btn-primary btn-block" type="submit" style="margin-top: 10px;">
+        {{ button_text }}
+    </button>
+{{ form_end(event) }}

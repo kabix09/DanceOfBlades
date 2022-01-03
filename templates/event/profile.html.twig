@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block container %}
+    <div class="row" style="min-height: 200px;">
+        <div class="col-sm-2" ></div>
+
+        <div class="col d-flex align-items-center">
+            <div class="box w-100" style="text-align: center" ><h1><strong>{{ event.name }}</strong></h1></div>
+        </div>
+
+        <div class="col-sm-2" ></div>
+    </div>
+
+    <div class="row" style="min-height: 200px;">
+        <div class="col-sm-2" ></div>
+
+        <div class="col" >
+            <h4>Level: {{ event.level }}</h4>
+            <div class="w-100"></div>
+            <h4>Registration start date: {{ event.registrationOpeningDate | date('Y-m-d H:i') }}</h4>
+            <h4>Start date: {{ event.startEventDate | date('Y-m-d H:i') }}</h4>
+            <div>{{ event.description }}</div>
+        </div>
+
+        <div class="col-sm-2 d-flex align-items-center" >
+            {% if is_granted("ROLE_USER") %}
+                <div class="box w-100" style="text-align: center">
+                    {% if isEnrolled %}
+                        <a href="{{ path('app_event_unsubscribe', { 'slug': event.slug }) }}" style="text-decoration: none">&#10060;</a>
+                    {% else %}
+                        <a href="{{ path('app_event_join_to', { 'slug': event.slug }) }}" style="text-decoration: none">&#10004;</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <div class="row" style="min-height: 200px;">
+        <div class="col-sm-2" ></div>
+
+        <div class="col">
+            <div>
+                <table class="table table-light table-hover caption-top">
+                    <caption>Enrolled users: {{ members | length }}</caption>
+                    <thread>
+                        <th scope="col">#</th>
+                        <th scope="col">Nick</th>
+                        <th scope="col">Join date</th>
+                        <th scope="col">Score</th>
+
+                    </thread>
+
+                    <tbody>
+                    {# todo: add link to avatar achievements page #}
+                    {% for member in members %}
+                        <tr>
+                            <th scope="row">{{ loop.index }}</th>
+                            <td><a href="{{ path('app_avatar_guest', {'nick': member.avatar.nick}) }}">{{ member.avatar.nick }}</a></td>
+                            <td> {{ member.joinMemberDate | date('Y-m-d H:i:s') }} </td>
+                            <td> {{ member.score }} </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-sm-2" ></div>
+    </div>
+
+{% endblock %}

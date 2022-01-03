@@ -77,6 +77,17 @@ class SelectionRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('t')
             ->andWhere('t.type = :val')
             ->setParameter('val', 'MAP_CLIMATE')
+            ->addOrderBy('t.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function getEventsTypes()
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :val')
+            ->setParameter('val', 'EVENT_TYPE')
             ->getQuery()
             ->getResult()
         ;

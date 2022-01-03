@@ -9,6 +9,8 @@ final class MenuMapper
          'app_sign_in' => 'app_login',
          'app_profile' => 'app_user_profile',
          'app_world_maps' => 'app_list_map',
+         'app_tasks_tournaments' => 'app_tournaments_list',
+         'app_tasks_raids' => 'app_raids_list',
      ];
 
      public function __construct() {}
