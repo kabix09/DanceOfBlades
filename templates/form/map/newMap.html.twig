@@ -13,7 +13,8 @@
                     <p class="card-text">
                         {{ include('form/map/_form.html.twig', {
                             map: newMap,
-                            button_text: 'Create'
+                            button_text: 'Create',
+                            path: path('app_create_map')
                         }) }}
                         {# action_path: path('app_create_map'), #}
                     </p>

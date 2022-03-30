@@ -6,11 +6,14 @@ use App\Entity\Boss;
 use App\Entity\EventBoss;
 use App\Entity\EventParticipant;
 use App\Entity\EventsBook;
+use App\Entity\Map;
 use App\Form\Boss\BossFormType;
 use App\Form\Event\EventBossCollectionFormType;
 use App\Form\Event\EventBossFormType;
 use App\Form\Event\EventFormType;
+use App\Form\Event\EventMapFormType;
 use App\Form\Event\SelectElement\SelectBossFormType;
+use App\Form\Event\SelectElement\SelectMapFormType;
 use App\Repository\EventsBookRepository;
 use App\Repository\RaidRepository;
 use App\Repository\TournamentRepository;
@@ -114,6 +117,7 @@ class EventsController extends AbstractController
     {
         $event = new EventsBook();
         $event->addBoss(new EventBoss());
+        $event->addMap(new Map());
 
         $form = $this->createForm(EventFormType::class, $event, ['readonly' => false]);
 
@@ -243,7 +247,7 @@ class EventsController extends AbstractController
     }
 
     // MODAL FORM
-
+    // select boss form
     /**
      * @Route("/event/modal-select-boss", name="app_event_form_modal_select_boss")
      */
@@ -257,6 +261,24 @@ class EventsController extends AbstractController
             return $form->getData()['select']['name'];
         }
         return $this->render('form/event/modal/selectBoss.html.twig', [
+            'select' => $form->createView()
+        ]);
+    }
+
+    // select map form
+    /**
+     * @Route("/event/modal-select-map", name="app_event_form_modal_select_map")
+     */
+    public function getSelectMapModalForm(Request $request)
+    {
+        $form = $this->createForm(SelectMapFormType::class);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+            return $form->getData()['select']['name'];
+        }
+        return $this->render('form/event/modal/selectMap.html.twig', [
             'select' => $form->createView()
         ]);
     }
@@ -276,7 +298,18 @@ class EventsController extends AbstractController
             'boss' => $form->createView()
         ]);
     }
+    /**
+     * @Route("/event/map-colection-card", name="app_event_map_collection_card")
+     * @return Response
+     */
+    public function getMapColectionCard()
+    {
+        $form = $this->createForm(EventMapFormType::class, new Map());
 
+        return $this->render('form/event/eventMap/eventMapCollectionCard.html.twig', [
+            'map' => $form->createView()
+        ]);
+    }
 
     // EVENT PROFILE
     /**
@@ -297,7 +330,6 @@ class EventsController extends AbstractController
             $avatarID =  $this->getUser()->getAvatar()->getId();
             $isEnrolled = array_filter(iterator_to_array($eventsBook->getAvatar()->getIterator()), function($member) use ($avatarID){ return $member->getAvatar()->getId() === $avatarID; });
         }
-
 
         return $this->render('event/profile.html.twig', [
             'event' => $eventsBook,

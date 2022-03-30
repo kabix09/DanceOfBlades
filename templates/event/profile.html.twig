@@ -11,15 +11,19 @@
         <div class="col-sm-2" ></div>
     </div>
 
-    <div class="row" style="min-height: 200px;">
+    <div class="row" style="min-height: 100px;">
         <div class="col-sm-2" ></div>
 
         <div class="col" >
-            <h4>Level: {{ event.level }}</h4>
             <div class="w-100"></div>
-            <h4>Registration start date: {{ event.registrationOpeningDate | date('Y-m-d H:i') }}</h4>
-            <h4>Start date: {{ event.startEventDate | date('Y-m-d H:i') }}</h4>
-            <div>{{ event.description }}</div>
+            <div class="d-flex justify-content-between">
+                {% if event.startEventDate < "now"|date("Y-m-d H:i:s") %}
+                    <h5>Started date: {{ event.startEventDate | ago }}</h5>
+                    <h5>End date: {{ event.endEventDate | date("H:i m.d.Y") }}</h5>
+                {% else %}
+                    <h5>Registration date: {{ event.registrationOpeningDate | ago}}</h5>
+                {% endif %}
+            </div>
         </div>
 
         <div class="col-sm-2 d-flex align-items-center" >
@@ -36,11 +40,86 @@
     </div>
 
 
-    <div class="row" style="min-height: 200px;">
+    <div class="row">
         <div class="col-sm-2" ></div>
 
         <div class="col">
-            <div>
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#description" aria-controls="description" role="tab" data-toggle="tab">Description</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#maps" aria-controls="maps" role="tab" data-toggle="tab">Maps</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#bosses" aria-controls=bosses role="tab" data-toggle="tab">Bosses</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#participants" aria-controls="participants" role="tab" data-toggle="tab">Participants</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-sm-2" ></div>
+    </div>
+
+    <div class="row" style="min-height: 200px;">
+        <div class="col-sm-2" ></div>
+
+        <div class="col tab-content">
+
+            <div role="tabpanel" class="col tab-pane" id="description">
+                <div class="container">
+                    <p class="lead">{{ event.description }}</p>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="maps">
+                <table class="table table-light table-hover caption-top">
+                    <caption></caption>
+                    <thread>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Area Type</th>
+
+                    </thread>
+
+                    <tbody>
+                    {# todo: add link to avatar achievements page #}
+                    {% for map in maps %}
+                        <tr>
+                            <th scope="row">{{ loop.index }}</th>
+                            <td> {{ map.name }} </td>
+                            <td> {{ map.areaType }} </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="bosses">
+                <table class="table table-light table-hover caption-top">
+                    <caption></caption>
+                    <thread>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Dificult Level</th>
+
+                    </thread>
+
+                    <tbody>
+                    {# todo: add link to avatar achievements page #}
+                    {% for boss in bosses %}
+                        <tr>
+                            <th scope="row">{{ loop.index }}</th>
+                            <td> {{ boss.boss.name }} </td>
+                            <td> {{ boss.difficultnessLevel }} </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="participants">
                 <table class="table table-light table-hover caption-top">
                     <caption>Enrolled users: {{ members | length }}</caption>
                     <thread>
@@ -57,7 +136,7 @@
                         <tr>
                             <th scope="row">{{ loop.index }}</th>
                             <td><a href="{{ path('app_avatar_guest', {'nick': member.avatar.nick}) }}">{{ member.avatar.nick }}</a></td>
-                            <td> {{ member.joinMemberDate | date('Y-m-d H:i:s') }} </td>
+                            <td> {{ member.joinMemberDate | date('Y-m-d H:i') }} </td>
                             <td> {{ member.score }} </td>
                         </tr>
                     {% endfor %}
@@ -68,5 +147,35 @@
 
         <div class="col-sm-2" ></div>
     </div>
+
+{% endblock %}
+
+{% block script %}
+    {{ parent() }}
+
+    <script>
+        const userMenuHashs = ['description', 'maps', 'bosses', 'participants'];
+
+        if(window.location.hash){
+            var element = document.getElementById(window.location.hash.substring(1));
+            element.style.display = 'block';
+        }else {
+            document.getElementById('description').style.display = 'block';
+        }
+
+        window.onhashchange = function(){
+            if(userMenuHashs.find( hash => hash === location.hash.substring(1)))
+            {
+                userMenuHashs.forEach(function (hash, index) {
+                    document.getElementById(hash).style.display = 'none';
+                })
+
+                document.getElementById(location.hash.substring(1)).style.display = 'block';
+            }else {
+                document.getElementById('description').style.display = 'block';
+            }
+
+        }
+    </script>
 
 {% endblock %}

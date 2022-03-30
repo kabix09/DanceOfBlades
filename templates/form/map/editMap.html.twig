@@ -9,11 +9,12 @@
 
             <div class="card">
                 <div class="card-body">
-                    <h3 class="card-title text-center">Create map</h3>
+                    <h3 class="card-title text-center">Update map</h3>
                     <p class="card-text">
                         {{ include('form/map/_form.html.twig', {
                             map: editMap,
-                            button_text: 'Update'
+                            button_text: 'Update',
+                            path: path('app_edit_map', {'slug': editMap.vars.value.slug})
                         }) }}
                         {# action_path: path('app_edit_map', {'id': editMap.vars.data.id }), #}
 

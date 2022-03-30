@@ -22,6 +22,8 @@
         {{ include('form/event/collection/selectBossModalWindow.html.twig') }}
         {{ include('form/event/collection/createBossModalWindow.html.twig') }}
 
+        {{ include('form/event/collection/selectMapModalWindow.html.twig') }}
+        {{ include('form/event/collection/createMapModalWindow.html.twig') }}
     </div>
 
 {% endblock %}
@@ -30,4 +32,6 @@
     {{ parent() }}
     <script src="{{ asset('js/event_form.js') }}"></script>
     <script src="{{ asset('js/event_boss_modal_form.js') }}"></script>
+    <script src="{{ asset('js/event_map_modal_form.js') }}"></script>
+
 {% endblock %}

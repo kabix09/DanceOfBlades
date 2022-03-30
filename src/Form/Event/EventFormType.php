@@ -101,6 +101,17 @@ class EventFormType extends AbstractType implements DataMapperInterface
                 'data' => $options['data']->getBoss(),
                 'prototype' => true,
             ])
+            ->add('map', CollectionType::class, [
+                'entry_type' => EventMapFormType::class,
+                'entry_options' => [
+                    'label' => false
+                ],
+                'by_reference' => true,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'data' => $options['data']->getMap(),
+                'prototype' => true,
+            ])
         ;
 
         $builder->setDataMapper($this);

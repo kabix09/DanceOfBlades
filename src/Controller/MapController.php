@@ -209,6 +209,89 @@ class MapController extends AbstractController
     }
 
     /**
+     * @IsGranted("ROLE_MAP_MANAGER")
+     * @Route("/map/create-from-data", name="app_create_map_dynamically")
+     * @param Request $request
+     * @return Response
+     */
+    public function createMapByFetch(Request $request, Uploader $uploader)
+    {
+        $data = $request->query->get('map_form');
+
+        if($data)
+        {
+            $map = new Map();
+
+            $this->entityManager->persist($map);
+
+            $map->setName($data['name']);
+            $map->setDescription($data['description']);
+            $map->setRegion($data['region']?? null);
+            $map->setAreaType($data['areaType']);
+            $map->setTerrainType($data['terrainType']);
+            $map->setIsClimateInfluenced($data['isClimateInfluenced']);
+            $map->setClimate($data['climate']??'');
+            $map->setDangerousLevel($data['dangerousLevel']);
+            $map->setNoBattleZone($data['noBattleZone'] ?? false);
+            $map->setNoViolenceZone($data['noViolenceZone'] ?? false);
+            $map->setNoEscapeZone($data['noEscapeZone'] ?? false);
+            $map->setNoMagicZone($data['noMagicZone'] ?? false);
+
+            $map->setSlug(
+                Urlizer::urlize($map->getName())
+            );
+
+            /** @var UploadedFile $image */
+//            $image = $data['image']->getData();
+//
+//            $map->setImage(
+//                Urlizer::urlize(
+//                    pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME)
+//                ) . '-' . Uuid::uuid4()->toString() . '.' . $image->guessExtension()
+//            );
+
+            $this->entityManager->flush();
+
+            //$uploader->uploadMapImage($image, $map->getImage());
+
+            return new Response(sprintf('%s', $this->entityManager->getRepository(Map::class)->findOneBy(['name' => $map->getName()])->getId()));
+        }
+
+        return new Response(sprintf('no data was send'));
+    }
+
+    // MODAL FORM
+
+    /**
+     * @IsGranted("ROLE_MAP_MANAGER")
+     * @Route("/map/modal-create-boss", name="app_event_form_modal_create_map")
+     * @param Request $request
+     * @return RedirectResponse|Response
+     */
+    public function getCreateMapModalForm(Request $request)
+    {
+        $form = $this->createForm(MapFormType::class, new Map(), ['readonly' => false]);
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+            /** @var Map $newMap */
+            $newMap = $form->getData();
+
+            // save entity
+            $this->entityManager->persist($newMap);
+            $this->entityManager->flush();
+
+            return $this->redirectToRoute('app_map_profile', ['slug' => $newMap->getSlug()]);    // change name to slug
+        }
+
+        return $this->render('form/map/modal/createMap.html.twig', [
+            'map' => $form->createView()
+        ]);
+    }
+
+    /**
      * @Route("/map/{slug}", name="app_map_profile")
      * @ParamConverter("resluggle", class="Map", options={"mapping": {"slug": "slug"}})
      * @param Map $map

@@ -1,0 +1,10 @@
+{{ include('form/map/_form.html.twig', {
+    map: map,
+    button_text: 'Create',
+    path: path('app_create_map')
+}) }}
+
+{% block script %}
+    <script src="{{ asset('js/event_map_modal_form.js') }}"></script>
+    <script src="{{ asset('js/map_form.js') }}"></script>
+{% endblock %}

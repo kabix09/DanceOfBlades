@@ -1,0 +1,22 @@
+<div class="row mt-2" style="width: 97%">
+    <div class="col-10 pe-0">
+        <div class="card">
+            <h5 class="card-header">Map</h5>
+            <div class="card-body">
+                <p class="card-text">
+                    {{ form_label(map.map) }}
+                    {{ form_widget(map.map) }}
+
+                <div class="d-flex justify-content-between align-items-center">
+                    {{ form_row(map.create) }}
+                    <div class="w-100"></div>
+                    {{ form_row(map.select) }}
+
+                </div>
+
+                {# display remove & add buttons - added by js #}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

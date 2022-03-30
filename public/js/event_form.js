@@ -1,36 +1,38 @@
-var $collectionHolder;
-
-var $addNewBossBtn = $('<button id="addBoss" type="button" class="btn btn-success btn-block">Add new</button>');
-var $modalForm = $(`form[name="select_boss_form"]`);
 
 $(document).ready(function() {
-    // get the collection
-    $collectionHolder = $('#bossEvent_list');
 
-    $collectionHolder.data('index', $collectionHolder.find('.row').length);
+    prepareCollection("boss");
 
-    $collectionHolder.parent().find('#addBossButtonBox').append($addNewBossBtn);
+    prepareCollection("map");
+})
 
-                //console.log($collectionHolder.data('modal-boss-url'))
+function prepareCollection(collectionType) {
+    var $newAddBtn = $('<button id="add' + capitalizeFirstLetter(collectionType) + '" type="button" class="btn btn-success btn-block">Add new</button>');
+
+    let $collectionHandler = $(`#${collectionType}Event_list`);
+
+    $collectionHandler.data('index', $collectionHandler.find('.row').length);
+    $collectionHandler.parent().find('#add' + capitalizeFirstLetter(collectionType) + 'ButtonBox').append($newAddBtn);
 
     // add new item to the collection
-    $addNewBossBtn.click(function (e) {
+    $newAddBtn.click(function (e) {
         e.preventDefault();
 
         // create new boss form and append it to the collectionHolder
-        addNewBossForm();
-    })
+        addNewForm($collectionHandler, collectionType);
+    });
 
     // add 'remove card button' to items && update 'select boss button' click event
-    $collectionHolder.find('.row').each(function (index) {
-        addSelectButton($(this), index);
+    $collectionHandler.find('.row').each(function (index) {
+        addSelectButton($(this), index, collectionType);
         addRemoveButton($(this));
-    })
-})
+    });
 
-function addNewBossForm() {
+}
+
+function addNewForm($handler, collectionType) {
     // get the index
-    var index = $collectionHolder.data('index');
+    var index = $handler.data('index');
 
     // get boss list card template
     // var newForm = $collectionHolder.children().first()[0].outerHTML;
@@ -39,7 +41,7 @@ function addNewBossForm() {
     var newForm;
 
     $.ajax({
-        url: $collectionHolder.data('boss-collection-card'),
+        url: $handler.data(`${collectionType}-collection-card`),
         data: {},
         success: function (html) {
             newForm = html
@@ -48,42 +50,35 @@ function addNewBossForm() {
             }
 
             // fix collection element indexing
-            //newForm = newForm.replace(/\[0]/g, `[${index}]`);
-            //newForm = newForm.replace(/_0_/g, `_${index}_`);
+            if(collectionType == 'map')
+            {
+                newForm = newForm.replace(/event_map_form_/g, `event_form_${collectionType}_${index}_`);
+                newForm = newForm.replace(/event_map_form\[/g, `event_form[${collectionType}][${index}][`);
+            }else if(collectionType == 'boss')
+            {
+                newForm = newForm.replace(/event_boss_form_/g, `event_form_${collectionType}_${index}_`);
+                newForm = newForm.replace(/event_boss_form\[/g, `event_form[${collectionType}][${index}][`);
+            }
 
-            // fix collection element indexing
-            newForm = newForm.replace(/event_boss_form_/g, `event_form_boss_${index}_`);
-            newForm = newForm.replace(/event_boss_form\[/g, `event_form[boss][${index}][`);
-
-            $collectionHolder.data('index', index+1);
+            $handler.data('index', index+1);
 
             newForm = $(newForm);
 
-            addSelectButton(newForm, index);
+            addSelectButton(newForm, index, collectionType);
             // add remove button
-            addRemoveButton(newForm);
+            addRemoveButton(newForm, "remove" + capitalizeFirstLetter(collectionType));
 
             // append row before 'add button'; 'parent' to skip 'add button' div wrapper
-            $collectionHolder.append(newForm);
+            $handler.append(newForm);
         }
     });
-
-
-/*
-    var $cardText = $('<p class="card-text"></p>').append(newForm);
-    var $cardBody = $('<div class="card-body"></div>').append($cardText);
-    var $card = $('<div class="card"><h5 class="card-header">Boss</h5></div>').append($cardBody);
-    var $column = $('<div class="col-10 pe-0"></div>').append($card);
-    var $row = $('<div class="row mt-2" style="width: 97%"></div>').append($column);
-*/
-
-
 }
 
+// ### COLLECTION - CARDS SECTION
 // remove button
-function addRemoveButton($row) {
+function addRemoveButton($row, idName) {
     // create remove button
-    var $removeButton = $('<button id="removeBoss" type="button" class="btn btn-danger btn-block">&#10008;</button>');
+    var $removeButton = $('<button id="'+idName+'" type="button" class="btn btn-danger btn-block">&#10008;</button>');
 
     var $removeButtonColumn = $('<div id="removeButtonBox" class="col-2 d-flex flex-column align-items-center justify-content-center">').append($removeButton)
 
@@ -96,43 +91,49 @@ function addRemoveButton($row) {
     $row.append($removeButtonColumn);
 }
 
-function addSelectButton($row, index) {
-    // create remove button
-    var $selectBossButton = $row.find(`#event_form_boss_${index}_select`);
-    var $selectBossInput = $row.find(`#event_form_boss_${index}_boss`);
+function addSelectButton($row, index, collectionType) {
 
-    var $createBossButton = $row.find(`#event_form_boss_${index}_create`);
+    var $selectCollectionElementButton = $row.find(`#event_form_${collectionType}_${index}_select`);
+    var $createCollectionElementButton = $row.find(`#event_form_${collectionType}_${index}_create`);
+
+    var $selectCollectionElementInput = $row.find(`#event_form_${collectionType}_${index}_${collectionType}`);   //event_form_boss_N_boss or event_form_map_N_map
 
     // rewrite using $(this) - to prevent ...
-    $selectBossButton.click(function (e) {
+    $selectCollectionElementButton.click(function (e) {
         e.preventDefault();
 
-        $('#selectBossModal').data('parent-id', `event_form_boss_${index}_boss`);
+        $(`#select` +  capitalizeFirstLetter(collectionType) + `Modal`).data('parent-id', `event_form_${collectionType}_${index}_${collectionType}`);
 
 
-        //$('#selectBossModal').find('#select_boss_form_select').val($selectBossInput.val()).change();
-        applyModalForm($selectBossInput);
+        //$('#selectBossModal').find('#select_boss_form_select').val($selectCollectionElementInput.val()).change();
+        applyModalForm($selectCollectionElementInput, collectionType);
     })
 
-    $createBossButton.click(function (e) {
+    $createCollectionElementButton.click(function (e) {
         e.preventDefault();
 
-        $('#createBossModal').data('parent-id', `event_form_boss_${index}_boss`);
+        $(`#create` + capitalizeFirstLetter(collectionType) + `Modal`).data('parent-id', `event_form_${collectionType}_${index}_${collectionType}`);
     })
 }
 
-function applyModalForm($selectBossInput) {
+function applyModalForm($selectColletionElementInput, collectionType) {
 
-    var $selectFormButton = $(`#addSelectedBossModelFromModal`);
+    var $selectFormButton = $(`#addSelected` + capitalizeFirstLetter(collectionType) +`ModelFromModal`);
 
     $selectFormButton.on('click',function(e){
         e.preventDefault();
 
-        $(`#` + $('#selectBossModal').data('parent-id')).val($modalForm.find(`#select_boss_form_select`).val());
+        $modalForm = $(`form[name="select_${collectionType}_form"]`);
+
+        $(`#` + $(`#select` + capitalizeFirstLetter(collectionType) + `Modal`).data('parent-id')).val($modalForm.find(`#select_${collectionType}_form_select`).val());
 
 
         //console.log($selectBossInput);
         // hide modal
-        $('#selectBossModal').modal('hide');
+        $(`#select` + capitalizeFirstLetter(collectionType) + `Modal`).modal('hide');
     });
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }

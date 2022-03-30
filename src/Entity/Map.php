@@ -2,9 +2,11 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Sluggable\Util\Urlizer;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 /**
  * Map
@@ -17,9 +19,10 @@ class Map
     /**
      * @var string
      *
-     * @ORM\Column(name="id", type="guid", nullable=false, options={"default"="newid()"})
+     * @ORM\Column(name="id", type="uuid", nullable=false, options={"default"="newid()"})
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=UuidGenerator::class)
      */
     private string $id;
 
@@ -122,9 +125,26 @@ class Map
      */
     private string $slug = "";
 
+    /**
+     * @var Collection | EventsBook[]
+     *
+     * @ORM\ManyToMany(targetEntity="App\Entity\EventsBook", mappedBy="map")
+     * @ORM\JoinTable(name="event_map",
+     *   joinColumns={
+     *     @ORM\JoinColumn(name="map_id", referencedColumnName="id")
+     *   },
+     *   inverseJoinColumns={
+     *     @ORM\JoinColumn(name="event_id", referencedColumnName="id")
+     *   }
+     * )
+     */
+    private Collection $events;
+
     public function __construct()
     {
+        $this->id = '';
         $this->slug = Urlizer::urlize($this->getName());            // regenerate slug after each name change
+        $this->events = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function getId(): ?string
@@ -307,6 +327,45 @@ class Map
     public function setIsClimateInfluenced(bool $isClimateInfluenced): void
     {
         $this->isClimateInfluenced = $isClimateInfluenced;
+    }
+
+    /**
+     * @return Collection|EventsBook[]
+     */
+    public function getEvent(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(EventsBook $eventsBook): self
+    {
+        if(!$this->events->contains($eventsBook))
+        {
+            $this->events[] = $eventsBook;
+
+            $eventsBook->addMap($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(EventsBook $eventsBook): self
+    {
+        if($this->events->contains($eventsBook))
+        {
+            $this->events->remove($eventsBook);
+
+            $eventsBook->removeMap($this);
+        }
+
+        return $this;
+    }
+
+    public function setEvent(Collection $collection): self
+    {
+        $this->events = $collection;
+
+        return $this;
     }
 }
 

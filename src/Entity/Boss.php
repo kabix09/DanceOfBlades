@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Sluggable\Util\Urlizer;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
 
+
 /**
  * Boss
  *

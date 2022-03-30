@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use App\Repository\EventsBookRepository;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
 
 /**
  * EventsBook
@@ -18,7 +19,7 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
 class EventsBook
 {
     /**
-     * @var \Ramsey\Uuid\UuidInterface
+     * @var UuidInterface
      *
      * @ORM\Column(name="id", type="uuid", nullable=false, options={"default"="newid()"})
      * @ORM\Id
@@ -108,9 +109,9 @@ class EventsBook
     private Collection $avatar;
 
     /**
-     * @var Collection
+     * @var Collection | Map[]
      *
-     * @ORM\ManyToMany(targetEntity="EventMap", inversedBy="event")
+     * @ORM\ManyToMany(targetEntity="App\Entity\Map", inversedBy="events")
      * @ORM\JoinTable(name="event_map",
      *   joinColumns={
      *     @ORM\JoinColumn(name="event_id", referencedColumnName="id")
@@ -335,6 +336,8 @@ class EventsBook
         if(!$this->map->contains($map))
         {
             $this->map[] = $map;
+
+            $map->addevent($this);
         }
 
         return $this;
@@ -342,14 +345,18 @@ class EventsBook
 
     public function removeMap(Map $map): self
     {
-        $this->map->remove($map);
+        if ($this->map->contains($map)) {
+            $this->map->remove($map);
+
+            $map->removeEvent($this);
+        }
 
         return $this;
     }
 
     public function setMap(Collection $collection): self
     {
-        $this->avatar = $collection;
+        $this->map = $collection;
 
         return $this;
     }

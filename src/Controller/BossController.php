@@ -99,6 +99,7 @@ class BossController extends AbstractController
     }
 
     /**
+<<<<<<< HEAD
      * @IsGranted("ROLE_BOSS_MANAGER")
      * @Route("/boss/create-from-data", name="app_create_boss_dynamically")
      * @param Request $request
@@ -164,6 +165,8 @@ class BossController extends AbstractController
     }
 
     /**
+=======
+>>>>>>> 016dee8 (Add boss form)
      * @Route("/boss/{slug}", name="app_boss_profile")
      * @ParamConverter("resluggle", class="Boss", options={"mapping": {"slug": "slug"}})
      * @param Boss $boss

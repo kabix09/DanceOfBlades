@@ -9,14 +9,14 @@
             <div class="modal-body">
                 {{ render(controller('App\\Controller\\' ~ controllerFunction )) }}
             </div>
-            {% if modalId == 'createBossModal' %}
+            {% if modalId == 'create'~core~'Modal' %}
 
-            {% elseif modalId == 'selectBossModal' %}
+            {% elseif modalId == 'select'~core~'Modal'%}
                 <div class="modal-footer">
                     <div class="d-flex justify-content-between align-items-center w-100">
                         <button type="button" class="btn btn-secondary btn-block">New</button>
                         <div class="w-100"></div>
-                        <button id="addSelectedBossModelFromModal" type="submit" class="btn btn-primary btn-block">Add</button>
+                        <button id="addSelected{{ core }}ModelFromModal" type="submit" class="btn btn-primary btn-block">Add</button>
                     </div>
                 </div>
             {% endif %}

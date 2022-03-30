@@ -92,4 +92,15 @@ class SelectionRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    public function getAllRaces()
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('(t.type = :val_1) OR (t.type = :val_2)')
+            ->setParameter('val_1', 'RACE')
+            ->setParameter('val_2', 'AVATAR_RACE')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

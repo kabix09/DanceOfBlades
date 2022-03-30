@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block container %}
+
+    <div class="row">
+        <div class="col-6">
+            {# <img src="{{ asset('uploads/map_image/' ~ boss.image) }}" /> #}
+        </div>
+        <div class="col-6">
+            <div><strong>{{ boss.name }}</strong></div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    {{ parent() }}
+{% endblock %}

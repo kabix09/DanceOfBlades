@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %} Edit boss {%  endblock %}
+
+{% block body %}
+    <div class="jumbotron d-flex align-items-center" style="height: 85%;">
+        <div class="container" style="width: 40rem;">   <!--  padding: 15px; margin: auto; margin-top: 30px; -->
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Edit boss</h3>
+                    <div class="card-text">
+                        {{ include('form/boss/_form.html.twig', {
+                            boss: editBoss,
+                            button_text: 'Update',
+                            path: path('app_edit_boss', {'slug': editBoss.vars.value.slug})
+                        }) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

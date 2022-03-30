@@ -100,30 +100,23 @@
     <div class="tab" style="width: 30rem;">
         <h5>Maps list:</h5>
 
-        <div id="mapEvent_list" class="d-flex flex-column overflow-auto" style="max-height: 450px;" data-prototype="{{ form_widget(event.boss.vars.prototype) | e('html_attr')}}">
-{#            {% for map in event.map %}#}
+        <div id="mapEvent_list" class="d-flex flex-column overflow-auto" style="max-height: 450px;"
+             data-map-collection-card="{{ path('app_event_map_collection_card') }}"
+             data-prototype="{{ form_widget(event.map.vars.prototype) | e('html_attr')}}">
 
-{#                <div class="row mt-2" style="width: 97%">#}
-{#                    <div class="col-10 pe-0">#}
-{#                        <div class="card">#}
-{#                            <h5 class="card-header">Boss</h5>#}
-{#                            <div class="card-body">#}
-{#                                <div class="card-text">#}
+            {% for map in event.map %}
 
-{#                                    {{ form_widget(map) }}#}
+                {{ include('form/event/eventMap/eventMapCollectionCard.html.twig', {
+                    map: map
+                }) }}
 
-{#                                </div>#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </div>#}
-
-{#                    #}{# remove related boss from form collection - added by js #}
-{#                </div>#}
-
-{#            {% endfor %}#}
+            {% endfor %}
         </div>
 
-
+        <div id="addMapButtonBox" class="d-flex justify-content-around align-items-center mt-3">
+            <div class="w-50"></div>
+            {# <button id="addBoss" type="button" class="btn btn-success btn-block">Add next</button> #} {# &#10011; #}
+        </div>
         {# dsplay token manually #}
         {{ form_widget(event._token) }}
 
