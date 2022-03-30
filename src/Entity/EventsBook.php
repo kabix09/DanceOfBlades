@@ -3,23 +3,27 @@
 namespace App\Entity;
 
 use DateTime;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use App\Repository\EventsBookRepository;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 /**
  * EventsBook
  *
  * @ORM\Table(name="events_book", indexes={@ORM\Index(name="IX_rankings_book_name", columns={"name"})})
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass=EventsBookRepository::class)
  */
 class EventsBook
 {
     /**
-     * @var string
+     * @var \Ramsey\Uuid\UuidInterface
      *
-     * @ORM\Column(name="id", type="guid", nullable=false, options={"default"="newid()"})
+     * @ORM\Column(name="id", type="uuid", nullable=false, options={"default"="newid()"})
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=UuidGenerator::class)
      */
     private string $id;
 
@@ -31,10 +35,10 @@ class EventsBook
     private string $name;
 
     /**
-     * @var string $slug
+     * @var string
      *
-     * @ORM\Column(name="slug", type="string", length=40, nullable=false)
      * @Gedmo\Slug(fields={"name"})
+     * @ORM\Column(name="slug", type="string", length=40, nullable=false)
      */
     private string $slug;
 
@@ -43,21 +47,7 @@ class EventsBook
      *
      * @ORM\Column(name="description", type="string", length=400, nullable=true)
      */
-    private ?string $description;
-
-    /**
-     * @var int
-     *
-     * @ORM\Column(name="level", type="smallint", options={"default"="1"})
-     */
-    private int $level;
-
-    /**
-     * @var DateTime|null
-     *
-     * @ORM\Column(name="registration_opening_date", type="mydatetime", nullable=true)
-     */
-    private ?DateTime $registrationOpeningDate;
+    private $description;
 
     /**
      * @var DateTime
@@ -78,17 +68,75 @@ class EventsBook
      *
      * @ORM\Column(name="type", type="string", length=25, nullable=true)
      */
-    private ?string $type;
+    private $type;
 
+    /**
+     * @var DateTime
+     *
+     * @ORM\Column(name="registration_opening_date", type="mydatetime", nullable=false, options={"default"="CURRENT_TIMESTAMP"})
+     */
+    private DateTime $registrationOpeningDate;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="level", type="smallint", nullable=false, options={"default"="1"})
+     */
+    private $level = '1';
+
+    /**
+     * @var Collection
+     *
+     * @ORM\OneToMany(
+     *     targetEntity="App\Entity\EventBoss",
+     *     mappedBy="event",
+     *     indexBy="event",
+     *     cascade={"persist"}
+     * )
+     */
+    private Collection $boss;
+
+    /**
+     * @var Collection
+     *
+     * @ORM\OneToMany(
+     *     targetEntity="App\Entity\EventParticipant",
+     *     mappedBy="event",
+     *     cascade={"persist"}
+     * )
+     */
+    private Collection $avatar;
+
+    /**
+     * @var Collection
+     *
+     * @ORM\ManyToMany(targetEntity="EventMap", inversedBy="event")
+     * @ORM\JoinTable(name="event_map",
+     *   joinColumns={
+     *     @ORM\JoinColumn(name="event_id", referencedColumnName="id")
+     *   },
+     *   inverseJoinColumns={
+     *     @ORM\JoinColumn(name="map_id", referencedColumnName="id")
+     *   }
+     * )
+     */
+    private Collection $map;
+
+    /**
+     * Constructor
+     */
     public function __construct()
     {
         $this->name = "";
         $this->description = "";
         $this->level = 1;
-        $this->registrationOpeningDate = null;
+        $this->registrationOpeningDate = new DateTime('now');
         $this->startEventDate = new DateTime('now');
         $this->endEventDate = null;
         $this->type = "";
+        $this->boss = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->avatar = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->map = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function getId(): ?string
@@ -188,6 +236,120 @@ class EventsBook
     public function setType(?string $type): self
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|EventBoss[]
+     */
+    public function getBoss(): Collection
+    {
+        return $this->boss;
+    }
+
+    public function addBoss(EventBoss $boss): self
+    {
+        if(!$this->boss->contains($boss))
+        {
+            $this->boss[] = $boss;
+
+            $boss->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBoss(EventBoss $boss): self
+    {
+        if ($this->boss->contains($boss)) {
+            $this->boss->removeElement($boss);
+            // set the owning side to null (unless already changed)
+            if ($boss->getEvent() === $this) {
+                $boss->setEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function setBoss($collection): self
+    {
+        if($collection instanceof Collection)
+            $this->boss = $collection;
+        else
+            $this->boss->add($collection);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|EventParticipant[]
+     */
+    public function getAvatar(): Collection
+    {
+        return $this->avatar;
+    }
+
+    public function addAvatar(EventParticipant $avatar): self
+    {
+        if(!$this->avatar->contains($avatar))
+        {
+            $this->avatar[] = $avatar;
+            $avatar->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAvatar(EventParticipant $avatar): self
+    {
+        if ($this->avatar->contains($avatar)) {
+            $this->avatar->removeElement($avatar);
+            // set the owning side to null (unless already changed)
+            if ($avatar->getEvent() === $this) {
+                $avatar->setEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function setAvatar(Collection $collection): self
+    {
+        $this->avatar = $collection;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Map[]
+     */
+    public function getMap(): Collection
+    {
+        return $this->map;
+    }
+
+    public function addMap(Map $map): self
+    {
+        if(!$this->map->contains($map))
+        {
+            $this->map[] = $map;
+        }
+
+        return $this;
+    }
+
+    public function removeMap(Map $map): self
+    {
+        $this->map->remove($map);
+
+        return $this;
+    }
+
+    public function setMap(Collection $collection): self
+    {
+        $this->avatar = $collection;
 
         return $this;
     }

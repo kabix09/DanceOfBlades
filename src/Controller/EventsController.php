@@ -2,19 +2,21 @@
 
 namespace App\Controller;
 
-use App\Entity\Avatar;
+use App\Entity\Boss;
+use App\Entity\EventBoss;
+use App\Entity\EventParticipant;
 use App\Entity\EventsBook;
-use App\Entity\Pvp;
-use App\Entity\Raid;
-use App\Entity\StoneOfFreedom;
-use App\Entity\Tournament;
+use App\Form\Boss\BossFormType;
+use App\Form\Event\EventBossCollectionFormType;
+use App\Form\Event\EventBossFormType;
 use App\Form\Event\EventFormType;
+use App\Form\Event\SelectElement\SelectBossFormType;
 use App\Repository\EventsBookRepository;
 use App\Repository\RaidRepository;
 use App\Repository\TournamentRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\ORM\EntityManagerInterface;
-use Gedmo\Tree\RepositoryInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -104,19 +106,22 @@ class EventsController extends AbstractController
 
     /**
      * @IsGranted("ROLE_EVENT_MANAGER")
-     * @Route("/event/create", name="app_event_create")
+     * @Route("/event/create", name="app_create_event")
      * @param Request $request
      * @return RedirectResponse|Response
      */
     public function createEvent(Request $request)
     {
-        $form = $this->createForm(EventFormType::class, new EventsBook(), ['readonly' => false]);
+        $event = new EventsBook();
+        $event->addBoss(new EventBoss());
+
+        $form = $this->createForm(EventFormType::class, $event, ['readonly' => false]);
 
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid())
         {
-            $this->entityManager->persist($form->getData());
+            $this->entityManager->persist($event);
             $this->entityManager->flush();
 
             return $this->redirectToRoute('app_event_show', ['slug' => $form->getData()->getSlug()]);
@@ -142,6 +147,7 @@ class EventsController extends AbstractController
 
         if($form->isSubmitted() && $form->isValid())
         {
+            // TODO: if edit type is allowed then after change property it is necessary to remove object from A table and insert into B table associated wth new type
             $this->entityManager->persist($eventsBook);
             $this->entityManager->flush();
 
@@ -154,11 +160,11 @@ class EventsController extends AbstractController
     }
 
     /**
-     * @IsGranted("ROLE_MAP_MANAGER")
+     * @IsGranted("ROLE_EVENT_MANAGER")
      * @Route("/event/delete/{slug}", name="app_event_delete")
      * @param EventsBook $eventsBook
      */
-    public function deleteMap(EventsBook $eventsBook)
+    public function deleteEvent(EventsBook $eventsBook)
     {
         try{
             $this->entityManager->remove($eventsBook);
@@ -182,11 +188,11 @@ class EventsController extends AbstractController
             dd(sprintf("sorry registration to: %s is not allowed", $eventsBook->getName()));
         }
 
-        $repository = $this->getEventRepository($eventsBook->getType());
+        $repository = $this->getDoctrine()->getRepository(EventParticipant::class);
 
         if($repository->findOneBy([
-            'avatar' => $this->getUser()->getAvatar()->getId(),
-            'name' => $eventsBook->getId()
+            'event' => $eventsBook,
+            'avatar' => $this->getUser()->getAvatar(),
         ]))
         {
             dd(sprintf("sorry you can\'t joint to: %s, you already joined", $eventsBook->getName()));
@@ -194,10 +200,11 @@ class EventsController extends AbstractController
 
         $class = $repository->getClassName();
 
-        /** @var Tournament|Raid $event */
+        /** @var EventParticipant $event */
         $event = new $class();
-        $event->setName($eventsBook);
+        $event->setEvent($eventsBook);
         $event->setAvatar($this->getUser()->getAvatar());
+        $event->setJoinMemberDate(new \DateTime("now"));
         $event->setScore(0);
 
         $this->entityManager->persist($event);
@@ -217,67 +224,87 @@ class EventsController extends AbstractController
             dd(sprintf("sorry registration to: %s is not allowed", $eventsBook->getName()));
         }
 
-        $repository = $this->getEventRepository($eventsBook->getType());
+        $repository = $this->getDoctrine()->getRepository(EventParticipant::class);
 
-        $event = $repository->findOneBy([
-            'avatar' => $this->getUser()->getAvatar()->getId(),
-            'name' => $eventsBook->getId()
+        $eventMember = $repository->findOneBy([
+            'event' => $eventsBook,
+            'avatar' => $this->getUser()->getAvatar()
         ]);
 
-        if(!$event)
+        if(!$eventMember)
         {
             dd(sprintf("sorry you must first enroll into: %s", $eventsBook->getName()));
         }
 
-        $this->entityManager->remove($event);
+        $this->entityManager->remove($eventMember);
         $this->entityManager->flush();
 
         return $this->redirectToRoute('app_event_show', ['slug' => $eventsBook->getSlug()]);
     }
 
+    // MODAL FORM
+
+    /**
+     * @Route("/event/modal-select-boss", name="app_event_form_modal_select_boss")
+     */
+    public function getSelectBossModalForm(Request $request)
+    {
+        $form = $this->createForm(SelectBossFormType::class);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+            return $form->getData()['select']['name'];
+        }
+        return $this->render('form/event/modal/selectBoss.html.twig', [
+            'select' => $form->createView()
+        ]);
+    }
+
+    // DYNAMIC FORM EVENTS
+
+    // get view of form - boss collection - element -> requested html code by ajax
+    /**
+     * @Route("/event/boss-colection-card", name="app_event_boss_collection_card")
+     * @return Response
+     */
+    public function getBossColectionCard()
+    {
+        $form = $this->createForm(EventBossFormType::class, new EventBoss());
+
+        return $this->render('form/event/eventBoss/eventBossCollectionCard.html.twig', [
+            'boss' => $form->createView()
+        ]);
+    }
+
+
+    // EVENT PROFILE
     /**
      * @Route("/event/{slug}", name="app_event_show")
      * @param EventsBook $eventsBook
      */
     public function eventProfile(EventsBook $eventsBook)
     {
-        $repository = $this->getEventRepository($eventsBook->getType());
-
-        $members = $repository->findBy(['name' => $eventsBook->getId()]);
-
+        /*
+         * Event linked elements:
+         * members - $eventsBook->getAvatar()
+         * bosses - $eventsBook->getBoss()
+         * maps - $eventsBook->getMap()
+         */
         $isEnrolled = false;
         if($this->isGranted("ROLE_USER"))
         {
             $avatarID =  $this->getUser()->getAvatar()->getId();
-            $isEnrolled = array_filter($members, function($member) use ($avatarID){ return $member->getAvatar()->getId() === $avatarID; });
+            $isEnrolled = array_filter(iterator_to_array($eventsBook->getAvatar()->getIterator()), function($member) use ($avatarID){ return $member->getAvatar()->getId() === $avatarID; });
         }
 
 
         return $this->render('event/profile.html.twig', [
             'event' => $eventsBook,
-            'members' => $members,
+            'bosses' => $eventsBook->getBoss(),
+            'members' => $eventsBook->getAvatar(),
+            'maps' => $eventsBook->getMap(),
             'isEnrolled' => $isEnrolled,
         ]);
-    }
-
-    private function getEventRepository(string $eventType)
-    {
-        return $this->entityManager->getRepository($this->getEventType($eventType));
-    }
-
-    private function getEventType(string $eventType)
-    {
-        switch($eventType)
-        {
-            case 'RAID':
-            {
-                return Raid::class;
-            }
-
-            case 'TOURNAMENT':
-            {
-                return Tournament::class;
-            }
-        }
     }
 }

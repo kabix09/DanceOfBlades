@@ -1,13 +1,236 @@
-{{ form_start(event, {'method': "POST"}) }}
-    {{ form_row(event.name) }}
-    {{ form_row(event.description) }}
-    {{ form_row(event.level) }}
-    {{ form_row(event.registrationOpeningDate) }}
-    {{ form_row(event.startEventDate) }}
-    {{ form_row(event.endEventDate) }}
-    {{ form_row(event.type) }}
+{# https://stackoverflow.com/questions/36977497/symfony-form-how-to-add-class-to-form-group #}
 
-    <button class="btn btn-primary btn-block" type="submit" style="margin-top: 10px;">
-        {{ button_text }}
-    </button>
-{{ form_end(event) }}
+{{ form_start(event, {'method': "POST"}) }}
+
+    <div class="tab" style="width: 40rem;">
+        <div class="row">
+            {# left part of form #}
+            <div class="col" style="border-right: 2px solid #848484;">
+                {{ form_row(event.name) }}
+                {{ form_row(event.description) }}
+
+                <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+                    {{ form_label(event.level) }}
+                    {{ form_widget(event.level, {'attr': {
+                        'oninput': "amount.value="~ event.level.vars.id ~".value"
+                    }}) }}
+                    <input id="amount" type="text" value="{{ event.level.vars.value }}" readonly="readony" class="col-2"/>
+                </div>
+
+                {{ form_row(event.type) }}
+            </div>
+
+            {# right part of form #}
+            <div class="col">
+                <div class="row">
+                    {{ form_label(event.registrationOpeningDate) }}
+                    <div class="col">
+                        {{ form_widget(event.registrationOpeningDate.date, { attr: { class: 'abc' } }) }}
+                    </div>
+                    <div class="col">
+                        {{ form_widget(event.registrationOpeningDate.time, { attr: { class: 'abc' } }) }}
+                    </div>
+
+                    <div class="form-error">
+                        {{ form_errors(event.registrationOpeningDate) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    {{ form_label(event.startEventDate) }}
+                    <div class="col">
+                        {{ form_widget(event.startEventDate.date, { attr: { class: 'col' } }) }}
+                    </div>
+                    <div class="col">
+                        {{ form_widget(event.startEventDate.time, { attr: { class: 'col' } }) }}
+                    </div>
+
+                    <div class="form-error">
+                        {{ form_errors(event.startEventDate) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    {{ form_label(event.endEventDate) }}
+                    <div class="col">
+                        {{ form_widget(event.endEventDate.date, { attr: { class: 'col' } }) }}
+                    </div>
+                    <div class="col">
+                        {{ form_widget(event.endEventDate.time, { attr: { class: 'col' } }) }}
+                    </div>
+
+                    <div class="form-error">
+                        {{ form_errors(event.endEventDate) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# bosses list associated with event #}
+    <div class="tab" style="width: 30rem; max-height: 33rem">
+        <h5>Boss list:</h5>
+
+        <div id="bossEvent_list" class="d-flex flex-column overflow-auto" style="max-height: 450px;"
+             data-boss-collection-card="{{ path('app_event_boss_collection_card') }}"
+             data-prototype="{{ form_widget(event.boss.vars.prototype) | e('html_attr')}}">
+
+            {% for boss in event.boss %}
+
+                {{ include('form/event/eventBoss/eventBossCollectionCard.html.twig', {
+                    boss: boss
+                }) }}
+
+                    {# remove related boss from form collection #}
+                    {#
+                    <div id="removeButtonBox" class="col-2 d-flex flex-column align-items-center justify-content-center">
+                        <button id="removeBoss" type="button" class="btn btn-danger btn-block">&#10008;</button>
+                    </div>
+                    #}
+            {% endfor %}
+        </div>
+
+        <div id="addBossButtonBox" class="d-flex justify-content-around align-items-center mt-3">
+            <div class="w-50"></div>
+            {# <button id="addBoss" type="button" class="btn btn-success btn-block">Add next</button> #} {# &#10011; #}
+        </div>
+    </div>
+
+    {# maps list associated with event #}
+    <div class="tab" style="width: 30rem;">
+        <h5>Maps list:</h5>
+
+        <div id="mapEvent_list" class="d-flex flex-column overflow-auto" style="max-height: 450px;" data-prototype="{{ form_widget(event.boss.vars.prototype) | e('html_attr')}}">
+{#            {% for map in event.map %}#}
+
+{#                <div class="row mt-2" style="width: 97%">#}
+{#                    <div class="col-10 pe-0">#}
+{#                        <div class="card">#}
+{#                            <h5 class="card-header">Boss</h5>#}
+{#                            <div class="card-body">#}
+{#                                <div class="card-text">#}
+
+{#                                    {{ form_widget(map) }}#}
+
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+
+{#                    #}{# remove related boss from form collection - added by js #}
+{#                </div>#}
+
+{#            {% endfor %}#}
+        </div>
+
+
+        {# dsplay token manually #}
+        {{ form_widget(event._token) }}
+
+    </div>
+
+    {# buttuns to newx / prev form tab #}
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <button id="prevBtn" type="button" class="btn btn-secondary btn-block" onclick="nextPrev(-1)">Prev</button>
+        <div class="w-100"></div>
+        <button id="nextBtn" type="button" class="btn btn-secondary btn-block" onclick="nextPrev(1)">Next</button>
+    </div>
+
+    <div class="d-flex flex-row justify-content-around mt-3" style="text-align: center; margin-top: 0px;">
+        <span class="step btn-secondary" style="width: 2rem; height: 2rem; text-align: center; border-radius: 50%;">1</span>
+        <span class="step btn-secondary" style="width: 2rem; height: 2rem; text-align: center; border-radius: 50%;">2</span>
+        <span class="step btn-secondary" style="width: 2rem; height: 2rem; text-align: center; border-radius: 50%;">3</span>
+    </div>
+{{ form_end(event, {render_rest: false}) }}
+
+
+{% block style %}
+    <style>
+        .tab {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block script %}
+    <script>
+        var currentTab = 0; // Current tab is set to be the first tab (0)
+        showTab(currentTab); // Display the current tab
+
+        function showTab(n) {
+            // This function will display the specified tab of the form ...
+            var x = document.getElementsByClassName("tab");
+            x[n].style.display = "block";
+            // ... and fix the Previous/Next buttons:
+            if (n == 0) {
+                document.getElementById("prevBtn").style.display = "none";
+            } else {
+                document.getElementById("prevBtn").style.display = "inline";
+            }
+
+            if (n == (x.length - 1)) {
+                parent = document.getElementById("nextBtn").parentElement;
+                parent.lastElementChild.remove();
+                parent.innerHTML += '<button class="btn btn-primary btn-block" type="submit" style="margin-top: 10px;">{{ button_text }}</button>';
+
+            } else {
+                parent = document.getElementById("prevBtn").parentElement;
+                parent.lastElementChild.remove();
+                parent.innerHTML += '<button id="nextBtn" type="button" class="btn btn-secondary btn-block" onclick="nextPrev(1)">Next</button>';
+            }
+            // ... and run a function that displays the correct step indicator:
+            fixStepIndicator(n)
+        }
+
+        function nextPrev(n) {
+
+            // This function will figure out which tab to display
+            var x = document.getElementsByClassName("tab");
+            // Exit the function if any field in the current tab is invalid:
+            if (n == 1 && !validateForm()) return false;
+            // Hide the current tab:
+            x[currentTab].style.display = "none";
+            // Increase or decrease the current tab by 1:
+            currentTab = currentTab + n;
+            // if you have reached the end of the form... :
+            if (currentTab >= x.length) return false;
+            // Otherwise, display the correct tab:
+            showTab(currentTab);
+        }
+
+        function validateForm() {
+            // This function deals with validation of the form fields
+            var x, y, i, valid = true;
+            x = document.getElementsByClassName("tab");
+            y = x[currentTab].getElementsByTagName("input");
+            // A loop that checks every input field in the current tab:
+            for (i = 0; i < y.length; i++) {
+                // If a field is empty...
+                if (y[i].value == "") {
+                    // add an "invalid" class to the field:
+                    y[i].className += " invalid";
+                    // and set the current valid status to false:
+                    valid = false;
+                }
+            }
+            // If the valid status is true, mark the step as finished and valid:
+            if (valid) {
+                document.getElementsByClassName("step")[currentTab].className += "";
+            }
+
+            return valid; // return the valid status
+        }
+
+        function fixStepIndicator(n) {
+            // This function removes the "active" class of all steps...
+            var i, x = document.getElementsByClassName("step");
+
+            for (i = 0; i < x.length; i++) {
+                x[i].style.backgroundColor = "#a7a7a7";
+                //x[i].className += "btn-secondary";
+            }
+            //... and adds the "active" class to the current step:
+            x[n].style.backgroundColor = "#6f6f6f";
+        }
+    </script>
+{% endblock %}

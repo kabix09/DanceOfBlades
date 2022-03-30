@@ -4,22 +4,30 @@
 
 {% block body %}
 
-    <div class="jumbotron d-flex align-items-center" style="height: 85%;">
-        <div class="container" style="width: 25rem;">   <!--  padding: 15px; margin: auto; margin-top: 30px; -->
+    <div class="container h-100 d-flex justify-content-around align-items-center">
 
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="card-title text-center">Edit event</h3>
-                    <p class="card-text">
-                        {{ include('form/event/_form.html.twig', {
-                            event: editEvent,
-                            button_text: 'Update'
-                        }) }}
-                        {# action_path: path('app_edit_map', {'id': editMap.vars.data.id }), #}
-                    </p>
-                </div>
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center">Edit event</h3>
+                <p class="card-text">
+                    {{ include('form/event/_form.html.twig', {
+                        event: editEvent,
+                        button_text: 'Update'
+                    }) }}
+                    {# action_path: path('app_edit_map', {'id': editMap.vars.data.id }), #}
+                </p>
             </div>
         </div>
+
+        {{ include('form/event/collection/selectBossModalWindow.html.twig') }}
+        {{ include('form/event/collection/createBossModalWindow.html.twig') }}
+
     </div>
 
+{% endblock %}
+
+{% block script %}
+    {{ parent() }}
+    <script src="{{ asset('js/event_form.js') }}"></script>
+    <script src="{{ asset('js/event_boss_modal_form.js') }}"></script>
 {% endblock %}

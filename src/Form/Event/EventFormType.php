@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Form\Event;
 
+use App\Entity\Boss;
+use App\Entity\EventBoss;
 use App\Entity\EventsBook;
 use App\Entity\Selection;
 use App\Form\DataTransformer\StringToSelectionTransformer;
@@ -11,9 +13,10 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Exception;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\DataMapperInterface;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\RangeType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -27,11 +30,12 @@ class EventFormType extends AbstractType implements DataMapperInterface
     public const EVENT_FIELDS = [
         'name' => ['name' => 'name', 'type' => TextType::class],
         'description' => ['name' => 'description', 'type' => TextareaType::class],
-        'level' => ['name' => 'level', 'type' => ChoiceType::class],
+        'level' => ['name' => 'level', 'type' => RangeType::class],
         'registrationOpeningDate' => ['name' => 'registrationOpeningDate', 'type' => DateTimeType::class],
         'startEventDate' => ['name' => 'startEventDate', 'type' => DateTimeType::class],
         'endEventDate' => ['name' => 'endEventDate', 'type' => DateTimeType::class],
         'type' => ['name' => 'type', 'type' => EntityType::class],
+        'boss' => ['name' => 'boss', 'type' => CollectionType::class],
     ];
 
     /**
@@ -51,37 +55,28 @@ class EventFormType extends AbstractType implements DataMapperInterface
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('name', TextType::class, [
-                'attr' => ['readonly' => $options['readonly']]
-            ])
+            ->add('name', TextType::class)
             ->add('description', TextareaType::class)
-            ->add('level', ChoiceType::class, [
-                'choices' => [
-                    1=>1,
-                    2=>2,
-                    3=>3,
-                    4=>4,
-                    5=>5,
-                    6=>6,
-                    7=>7,
-                    8=>8,
-                    9=>9,
-                    10=>10,
-                    11=>11,
-                    12=>12,
-                    13=>13,
-                    14=>14,
-                    15=>15
+            ->add('level', RangeType::class, [
+                'attr' => [
+                    'min' => 1,
+                    'max' => 15
                 ],
             ])
             ->add('registrationOpeningDate', DateTimeType::class, [
-                'widget' => 'single_text',
+                'date_widget' => 'single_text',
+                'time_widget' => 'single_text',
+                'label' => 'Registration date'
             ])
             ->add('startEventDate', DateTimeType::class, [
-                'widget' => 'single_text',
+                'date_widget' => 'single_text',
+                'time_widget' => 'single_text',
+                'label' => 'Event start date'
             ])
             ->add('endEventDate', DateTimeType::class, [
-                'widget' => 'single_text',
+                'date_widget' => 'single_text',
+                'time_widget' => 'single_text',
+                'label' => 'End of event date'
             ])
             ->add('type', EntityType::class, [
                 'class' => Selection::class,
@@ -91,7 +86,20 @@ class EventFormType extends AbstractType implements DataMapperInterface
                 },
                 'constraints' => [
                     new NotBlank(['message' => 'The type can\'t be empty'])
-                ]
+                ],
+                'attr' => ['readonly' => $options['readonly']]
+            ])
+            // add boss
+            ->add('boss', CollectionType::class, [
+                'entry_type' => EventBossFormType::class,
+                'entry_options' => [
+                    'label' => false
+                ],
+                'by_reference' => false,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'data' => $options['data']->getBoss(),
+                'prototype' => true,
             ])
         ;
 
@@ -138,6 +146,11 @@ class EventFormType extends AbstractType implements DataMapperInterface
                         break;
                     }
 
+                    case RangeType::class: {
+                        $forms[$value['name']]->setData((int)$viewData->$functionName());
+
+                        break;
+                    }
 
                     default: {
                         $forms[$value['name']]->setData($viewData->$functionName());    // entity data must be access before initialization
@@ -174,6 +187,25 @@ class EventFormType extends AbstractType implements DataMapperInterface
                         $uploadedFile = $forms[$value['name']]->getData();
                         // set file original name as entity value
                         $viewData->$functionName($uploadedFile->getClientOriginalName());
+
+                        break;
+                    }
+
+                    case RangeType::class: {
+                        $viewData->$functionName((int)($forms[$value['name']]->getData()));
+
+                        break;
+                    }
+
+                    // TODO: REMEMBR Assign collection child to parent object - symfony don't map this defaults
+                    case CollectionType::class: {
+                        $collectionFunction = 'add' . ucfirst($value['name']);
+
+                        foreach ($forms[$value['name']]->getData() as $object)
+                        {
+                            $object->setEvent($viewData);
+                            $viewData->$collectionFunction($object);
+                        }
 
                         break;
                     }
