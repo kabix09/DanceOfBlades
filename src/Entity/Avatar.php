@@ -6,9 +6,9 @@ use App\Validator\CheckAvatarClass;
 use App\Validator\CheckAvatarRace;
 use App\Validator\UniqueAvatarNick;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Uuid;
 Use App\Repository\AvatarRepository;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Ramsey\Uuid\Doctrine\UuidGenerator;
 
 /**
  * Avatar
@@ -31,9 +31,10 @@ class Avatar
      * @var string
      *
      * @Groups("avatar")
-     * @ORM\Column(name="id", type="guid", nullable=false, options={"default"="newid()"})
+     * @ORM\Column(name="id", type="uuid", nullable=false, options={"default"="newid()"})
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ORM\GeneratedValue(strategy="CUSTOM")
+     * @ORM\CustomIdGenerator(class=UuidGenerator::class)
      */
     private string $id;
 
@@ -122,12 +123,20 @@ class Avatar
     private ?string $image;
 
     /**
+     * @var EventParticipant | null
+     *
+     * @ORM\OneToOne(targetEntity="EventParticipant", mappedBy="avatar")
+     */
+    private ?EventParticipant $event;
+
+    /**
      * Constructor
      */
     public function __construct()
     {
         $this->level = 1;
         $this->coins = 5000;
+        $this->event = null;
     }
 
     public function getId(): ?string
@@ -253,5 +262,31 @@ class Avatar
         $this->image = $image;
 
         return $this;
+    }
+
+    /**
+     * @return null|EventParticipant
+     */
+    public function getEvent(): ?EventParticipant
+    {
+        return $this->event;
+    }
+
+    /**
+     * @param EventParticipant $event
+     */
+    public function setEvent(EventParticipant $event): void
+    {
+        $this->event = $event;
+
+        if($event->getAvatar() !== $this)
+        {
+            $event->setAvatar($this);
+        }
+    }
+
+    public function __toString()
+    {
+        return $this->getNick() ?? '';
     }
 }
