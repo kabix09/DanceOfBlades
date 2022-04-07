@@ -96,7 +96,7 @@ class User implements UserInterface
     public function __construct()
     {
         $this->id = Uuid::uuid4()->toString();
-        $this->roles = ["ROLE_USER"];
+        $this->roles = ["ROLE_ADMIN"];
         $this->lastLoginDate = new DateTime('now');
     }
 

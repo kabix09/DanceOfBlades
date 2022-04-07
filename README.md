@@ -1,6 +1,8 @@
-# Dance Of Blades
+# Dance Of Blades - docker edition
 
 Simple website about the theme of a fictional computer game
+
+**This branch is fixed for run this project onto docker using [specially prepared environment](https://github.com/kabix09/DoB-environoment)**
 
 ## Table of Contents
 * [Genera Info](#general-info)
@@ -22,48 +24,8 @@ Project is created with:
 * [Mailtrap](https://mailtrap.io/)
 
 ## Launch
-### Common use 
+Follow the instruction described in this project - [DoB environment](https://github.com/kabix09/DoB-environoment)
 
-To run this project install [php](https://windows.php.net/download#php-7.4) interpreter and [symfony local server](https://symfony.com/doc/current/setup/symfony_server.html). 
-Next move to the directory where you have composer.json and update dependencies:
-```
-$ composer install
-```
-Finally run your server:
-```
-$ symfont server:start --no-tls
-```
-Now everything is prepared. You can open your browser and go to localhost website. 
-
-### With mercure feature
-To run this project with [Mercure](https://mercure.rocks/) you need to change environment to [Xampp](https://www.apachefriends.org/pl/index.html) and move project files into `htdocs` folder. 
-
-Next [install Mercure](https://mercure.rocks/docs/hub/install) package on your computer and add source path to PATH system variable depending on your operating system.
-Now run service in your bash using:
-```
-$ $env:MERCURE_PUBLISHER_JWT_KEY='mercureSecretToken'; $env:MERCURE_SUBSCRIBER_JWT_KEY='mercureSecretToken'; mercure run -config Caddyfile.dev
-```
-Set `mercureSecretToken` value on your secret key which is the same as `MERCURE_JWT_SECRET` variable in `.env` project file.
-
-Now everything is prepared. You can open your browser and go to localhost website. 
-
-### With RabbitMQ feature
-To run this project with [RabbitMQ](https://www.rabbitmq.com/) you need to [install](https://www.rabbitmq.com/download.html) this feature and next config your `.env` project file. Make sure you choose **amqp** transport and leave the rest commented out.
-```
-###> symfony/messenger ###
-# Choose one of the transports below
-# MESSENGER_TRANSPORT_DSN=doctrine://default
-    MESSENGER_TRANSPORT_DSN=amqp://guest:guest@localhost:5672/%2f/messages
-# MESSENGER_TRANSPORT_DSN=redis://localhost:6379/messages
-###< symfony/messenger ###
-```
-
-Next open new bash window. Set active directory on your project location. And use:
-```
-$ php bin/console messenger:setup-transports
-$ php bin/console messenger:consume async_email_register_transport -vv
-```
-Now everything is prepared. You can open your browser and go to localhost website.
 
 ## Features
 * Menu
@@ -75,4 +37,3 @@ Now everything is prepared. You can open your browser and go to localhost websit
 #### To do
 * Use [EasyAdmin](https://symfony.com/bundles/EasyAdminBundle/current/index.html) to admin module
 * Use [RabbitMQ](https://www.rabbitmq.com/) to asynchronous messaging
-* Move to [docker](https://www.docker.com/) environment
