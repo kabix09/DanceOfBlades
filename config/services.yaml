@@ -80,3 +80,17 @@ services:
             $mailOwner: '%env(SITE_EMAIL_OWNER)%'
 
     Symfony\Component\Asset\Context\RequestStackContext: '@assets.context'
+
+    Redis:
+        class: Redis
+        calls:
+            - connect:
+                  - '%env(REDIS_HOST)%'
+                  - '%env(int:REDIS_PORT)%'
+            - auth:
+                  - '%env(REDIS_PASSWORD)%'
+
+    Symfony\Component\HttpFoundation\Session\Storage\Handler\RedisSessionHandler:
+        arguments:
+            - '@Redis'
+            - { 'prefix': 'dbo_' }

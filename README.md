@@ -52,8 +52,9 @@ Now everything is prepared. You can open your browser and go to localhost websit
 * Login and register module
 * Email authentication
 * Friends module - using [Mercure](https://mercure.rocks/) to broadcast new invitations in real-time from server
+* Use [Redis](https://redis.io/) to store session
+
 #### To do
 * Use [EasyAdmin](https://symfony.com/bundles/EasyAdminBundle/current/index.html) to admin module
-* Use [Redis](https://redis.io/) to handle session
 * Use [RabbitMQ](https://www.rabbitmq.com/) to asynchronous messaging
 * Move to [docker](https://www.docker.com/) environment
