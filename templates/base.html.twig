@@ -7,9 +7,26 @@
         <title>{% block title %}Welcome!{% endblock %}</title>
 
         <style>
-            html, body {
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html {
                 width: 100%;
-                height: 95%;
+                height: 100%;
+            }
+            main {
+                -webkit-box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                box-sizing: border-box;
+                min-height: 75%;
+                padding: 1.5rem;
+                margin-top: 1rem;
+                margin-bottom: 2rem;
+            }
+            footer {
+                position: relative;
             }
         </style>
 
@@ -31,25 +48,25 @@
     <body class="w-100 h-100">
         {% block body %}
 
-            <header class="container text-center">
-                <p class="h1">
+            <header class="text-center" style="padding: 1.5rem">
+                <span class="display-3 fw-bold">
                     Dance Of Blades
-                </p>
+                </span>
             </header>
 
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 {% include 'navbar.html.twig' %}
             </nav>
 
-            <main class="container" style="background-color: #e3e3ff; padding:10px; margin-top: 15px; margin-bottom: 15px">
+            <main class="container" style="background-color: #e3e3ff;">
                 {% block container %}{% endblock %}
             </main>
 
-            <footer class="text-center text-lg-start bg-light text-muted">
-                <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
-                © 2021 Copyright:
-                <a class="text-reset fw-bold" href="https://github.com/kabix09/" rel="noopener noreferrer" target="_blank">kabix09</a>
-                </div>
+            <footer class="text-center text-lg-start bg-light text-muted w-100" style="background-color: rgba(0, 0, 0, 0.05);">
+                <p class="text-center h4" style="padding-top: 3rem; padding-bottom: 3rem;">
+                    <span>© 2021 Copyright:</span>
+                    <a class="text-reset fw-bold" href="https://github.com/kabix09/" rel="noopener noreferrer" target="_blank">kabix09</a>
+                </p>
             </footer>
 
         {% endblock %}
