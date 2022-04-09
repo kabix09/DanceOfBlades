@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}New Item{% endblock %}
+
+{% block body %}
+
+    <div class="jumbotron d-flex align-items-center" style="height: 85%;">
+        <div class="container" style="width: 25rem;">   <!--  padding: 15px; margin: auto; margin-top: 30px; -->
+
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Edit item</h3>
+                    <p class="card-text">
+                        {{ include('form/item/_form.html.twig', {
+                            item: editItem,
+                            button_text: 'Udate',
+                            path: path('app_edit_item', {'slug': editItem.vars.value.slug})
+                        }) }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    {{ parent() }}
+    <script src="{{ asset('js/item_form.js') }}"></script>
+{% endblock %}

@@ -7,6 +7,9 @@ oneup_flysystem:
         public_map_adapter:
             local:
                 location: '%kernel.project_dir%/public/uploads'
+        public_item_adapter:
+            local:
+                location: '%kernel.project_dir%/public/uploads'
     filesystems:
         public_avatar_filesystem:
             adapter: public_avatar_adapter
@@ -14,3 +17,6 @@ oneup_flysystem:
         public_map_filesystem:
             adapter: public_map_adapter
             alias: League\Flysystem\MapFilesystem
+        public_item_filesystem:
+            adapter: public_item_adapter
+            alias: League\Flysystem\ItemFilesystem

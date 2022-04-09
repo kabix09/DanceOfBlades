@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block container %}
+
+    <div class="row">
+        <div class="col-6">
+            <img src="{{ asset('uploads/item_image/' ~ item.image) }}" />
+        </div>
+        <div class="col-6">
+            <div><strong>{{ item.name }}</strong></div></br>
+            <div>{{ item.description }}</div></br>
+            <div>Type: {{ item.type | default }}</div></br>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+    {{ parent() }}
+{% endblock %}

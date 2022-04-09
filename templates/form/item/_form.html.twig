@@ -1,0 +1,40 @@
+{{ form_start(item, {'method': "POST", 'action': path }) }}
+    {{ form_row(item.name) }}
+    {{ form_row(item.description) }}
+
+<div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+    {{ form_label(item.level) }}
+    {{ form_widget(item.level, {'attr': {
+        'oninput': "amount.value="~ item.level.vars.id ~".value"
+    }}) }}
+    <input id="amount" type="text" value="{{ item.level.vars.value }}" readonly="readony" class="col-2"/>
+</div>
+
+<div class="js-form-item-group">
+    {{ form_row(item.group, {
+        attr: {
+            'data-item-type-url': path('app_item_type_select')
+        }
+    }) }}
+</div>
+
+<div class="js-item-type-specific-target">
+    {{ form_row(item.type, {
+        attr: {
+            'class': 'js-item-type-specific-target'
+        }
+    }) }}
+</div>
+
+<div class="d-flex justify-content-between align-items-center">
+    {{ form_row(item.value) }}
+
+    {{ form_row(item.required_user_level) }}
+</div>
+
+    {{ form_row(item.image) }}
+
+<button class="btn btn-primary btn-block" type="submit" style="margin-top: 10px;">
+    {{ button_text }}
+</button>
+{{ form_end(item) }}

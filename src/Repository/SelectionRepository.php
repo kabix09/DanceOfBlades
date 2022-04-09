@@ -103,4 +103,38 @@ class SelectionRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    public function getItemGroups()
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :val')
+            ->setParameter('val', 'ITEM_GROUP')
+            ->addOrderBy('t.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function getItemTypes()
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :val')
+            ->setParameter('val', 'ITEM_TYPE')
+            ->addOrderBy('t.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function getItemTypesByParent(string $parentId)
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.type = :val')
+            ->andWhere('t.dependencyTag = :p OR t.dependencyTag is null')
+            ->setParameter('val', 'ITEM_TYPE')
+            ->setParameter('p', $parentId)
+            ->getQuery()
+            ->getResult()
+            ;
+    }
 }

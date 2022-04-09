@@ -13,6 +13,8 @@ class Uploader
 
     public const MAP_IMAGE = 'map_image';
 
+    public const ITEM_IMAGE = 'item_image';
+
     /**
      * @var Filesystem
      */
@@ -22,6 +24,11 @@ class Uploader
      */
     private Filesystem $publicMapFilesystem;
     /**
+     * @var Filesystem
+     */
+    private Filesystem $publicItemFilesystem;
+
+    /**
      * @var LoggerInterface
      */
     private LoggerInterface $logger;
@@ -30,12 +37,14 @@ class Uploader
      * Uploader constructor.
      * @param Filesystem $publicAvatarFilesystem
      * @param Filesystem $publicMapFilesystem
+     * @param Filesystem $publicItemFilesystem
      * @param LoggerInterface $logger
      */
-    public function __construct(Filesystem $publicAvatarFilesystem, Filesystem $publicMapFilesystem, LoggerInterface $logger)
+    public function __construct(Filesystem $publicAvatarFilesystem, Filesystem $publicMapFilesystem, Filesystem $publicItemFilesystem, LoggerInterface $logger)
     {
         $this->publicAvatarFilesystem = $publicAvatarFilesystem;
         $this->publicMapFilesystem = $publicMapFilesystem;
+        $this->publicItemFilesystem = $publicItemFilesystem;
 
         $this->logger = $logger;
     }
@@ -84,6 +93,25 @@ class Uploader
         }
     }
 
+    public function uploadItemImage(File $file, string $newImageName): void
+    {
+        try {
+            /* open file descriptor */
+            $imageStream = fopen($file->getPathname(), 'rb');
+
+            $this->publicItemFilesystem->writeStream(
+                self::ITEM_IMAGE . '/' . $newImageName,
+                $imageStream
+            );
+
+            if(is_resource($imageStream))
+            {
+                fclose($imageStream);
+            }
+        } catch (FilesystemException $e) {
+            $this->logger->alert('Couldn\'t upload image');
+        }
+    }
     /**
      * @param string $imageName
      */

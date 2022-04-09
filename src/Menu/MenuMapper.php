@@ -11,6 +11,11 @@ final class MenuMapper
          'app_world_maps' => 'app_list_map',
          'app_tasks_tournaments' => 'app_tournaments_list',
          'app_tasks_raids' => 'app_raids_list',
+         'app_items_weapons' => 'app_items_weapon_list',
+         'app_items_outfits' => 'app_items_outfit_list',
+         'app_items_grimuars' => 'app_items_grimuar_list',
+         'app_items_potions' => 'app_items_potion_list',
+         'app_items_others' => 'app_items_other_list',
      ];
 
      public function __construct() {}
