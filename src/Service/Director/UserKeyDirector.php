@@ -4,21 +4,27 @@ declare(strict_types=1);
 namespace App\Service\Director;
 
 use App\Service\Token;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\{User, UserKeys};
 use App\Service\Builder\UserKeyBuilder;
 
 class UserKeyDirector
 {
     private UserKeyBuilder $builder;
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(UserKeyBuilder $userKeyBuilder)
+    public function __construct(EntityManagerInterface $entityManager, UserKeyBuilder $userKeyBuilder)
     {
         $this->builder = $userKeyBuilder;
+        $this->entityManager = $entityManager;
     }
 
-    public function buildActivateAccount(Token $token, User $user): UserKeys
+    public function buildActivateAccount(Token $token, User $user)
     {
-        return $this->builder
+        $newAccountActivationKey = $this->builder
             ->newObject()
             ->withCreateDate(new \DateTime('now'))
             ->withExpirationDate((new \DateTime('now'))->modify('+5 day'))
@@ -26,6 +32,9 @@ class UserKeyDirector
             ->withToken($token)
             ->withUser($user)
             ->getObject();
+
+        $this->entityManager->persist($newAccountActivationKey);
+        $this->entityManager->flush();
     }
 
     /* todo: build other type tokens */

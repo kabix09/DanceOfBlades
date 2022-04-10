@@ -48,7 +48,7 @@ class MainController extends AbstractController
 
         if(!$user->getIsActive())
         {
-            return $this->render('user/inactiveAccount.html.twig');
+            return $this->redirectToRoute('app_user_account_notification');
         }
 
         /**
@@ -65,6 +65,19 @@ class MainController extends AbstractController
             'avatar' => $avatar,
             'isAdmin' => in_array("ROLE_ADMIN", $this->getUser()->getRoles(),true),
         ]);
+    }
+
+    /**
+     * @Route("/user/inactiveAccount", name="app_user_account_notification")
+     * @param AvatarRepository $avatarRepository
+     * @return Response
+     */
+    public function inactiveAccount(AvatarRepository $avatarRepository): Response
+    {
+        if($this->isGranted('ROLE_USER') && !$this->getUser()->getIsActive())
+            return $this->render('user/inactiveAccount.html.twig');
+
+        return $this->redirectToRoute('app_user_profile');
     }
 
     /**

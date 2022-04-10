@@ -31,10 +31,20 @@ class SecurityController extends AbstractController
      * @var string
      */
     private $emailVerifyKey;
+    /**
+     * @var EventDispatcherInterface
+     */
+    private EventDispatcherInterface $eventDispatcher;
+    /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
 
-    public function __construct(string $emailVerifyKey)
+    public function __construct(EntityManagerInterface $entityManager, EventDispatcherInterface $eventDispatcher, string $emailVerifyKey)
     {
         $this->emailVerifyKey = $emailVerifyKey;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -67,15 +77,13 @@ class SecurityController extends AbstractController
      * @Route("/register", name="app_register")
      * @param Request $request
      * @param AuthenticationUtils $authenticationUtils
-     * @param EntityManagerInterface $entityManager
      * @param UserRepository $userRepository
      * @param UserDirector $userDirector
      * @param UserKeyDirector $userKeyDirector
      * @param Token $token
-     * @param Mailer $mailer
      * @return Response
      */
-    public function register(Request $request, AuthenticationUtils $authenticationUtils, EntityManagerInterface $entityManager, UserRepository $userRepository, UserDirector $userDirector, UserKeyDirector $userKeyDirector, Token $token, EventDispatcherInterface $eventDispatcher): Response
+    public function register(Request $request, AuthenticationUtils $authenticationUtils, UserRepository $userRepository, UserDirector $userDirector, UserKeyDirector $userKeyDirector, Token $token): Response
     {
         /*
          * if not granted role then user is not logged
@@ -102,26 +110,23 @@ class SecurityController extends AbstractController
             /*
              * exec transaction - create user & key
              */
-            $entityManager->transactional(function ($entityManager) use ($newUser, $userKeyDirector, $newVerifyKey, $userRepository) {
+            $this->entityManager->transactional(function ($entityManager) use ($newUser, $userKeyDirector, $newVerifyKey, $userRepository) {
                 $entityManager->persist($newUser);
                 $entityManager->flush();
 
                 /*
                  * * prepare account activation token
                  */
-                $newKey = $userKeyDirector->buildActivateAccount(
+                $userKeyDirector->buildActivateAccount(
                     $newVerifyKey,
                     $userRepository->findOneBy(['email' => $newUser->getEmail()])
                 );
 
-
-                $entityManager->persist($newKey);
-                $entityManager->flush();
             });
 
-            $eventDispatcher->dispatch(new NewAccountCreatedEvent($newUser, $newVerifyKey), NewAccountCreatedEvent::NAME);
+            $this->eventDispatcher->dispatch(new NewAccountCreatedEvent($newUser, $newVerifyKey), NewAccountCreatedEvent::NAME);
 
-            return $this->render('email/afterSendEmailFeedback.html.twig');
+            return $this->redirectToRoute('app_user_send_verify_email_notification');
         }
 
         return $this->render('form/user/register.html.twig', [
@@ -179,16 +184,13 @@ class SecurityController extends AbstractController
 
 
     /**
-     * @param EntityManagerInterface $entityManager
-     * @param Mailer $mailer
      * @param Token $token
      * @param UserKeyDirector $userKeyDirector
-     * @param UserRepository $userRepository
      * @IsGranted("ROLE_USER")
      * @Route("/user/activateAccountEmail", name="app_user_sent_activate_email_again")
      * @return Response
      */
-    public function sendActivateEmail(EntityManagerInterface $entityManager, Mailer $mailer, Token $token, UserKeyDirector $userKeyDirector, UserRepository $userRepository): Response
+    public function sendActivateEmail(Token $token, UserKeyDirector $userKeyDirector): Response
     {
         /**
          * @var User $user
@@ -202,19 +204,24 @@ class SecurityController extends AbstractController
         /*
          * * prepare account activation token
          */
-        $newKey = $userKeyDirector->buildActivateAccount(
+        $userKeyDirector->buildActivateAccount(
             $newVerifyKey,
-            $userRepository->findOneBy(['email' => $user->getEmail()])
+            $this->entityManager->getRepository(User::class)->findOneBy(['email' => $user->getEmail()])
         );
-
-        $entityManager->persist($newKey);
-        $entityManager->flush();
 
         /*
          * * email verification section
          */
-        $mailer->sendWelcomeMessage($user, $newVerifyKey);
+        $this->eventDispatcher->dispatch(new NewAccountCreatedEvent($user, $newVerifyKey), NewAccountCreatedEvent::NAME);
 
+        return $this->redirectToRoute('app_user_send_verify_email_notification');
+    }
+
+    /**
+     * @Route("/user/notification", name="app_user_send_verify_email_notification")
+     */
+    public function showSendVerifyEmail()
+    {
         return $this->render('email/afterSendEmailFeedback.html.twig');
     }
 
