@@ -6,7 +6,6 @@ namespace App\Service\Director;
 use App\Entity\Log;
 use App\Entity\User;
 use App\Service\Locator\GuestLocator;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -27,7 +26,7 @@ class LogDirector
         $this->guestLocator = $guestLocator;
     }
 
-    public function newDirectionLog(User $loginUser): Log
+    public function newLogEntry(User $loginUser): Log
     {
         $location = $this->guestLocator->getUserCity();
         $deviceType = $this->isMobileDevice() ? 'mobile' : 'desktop';

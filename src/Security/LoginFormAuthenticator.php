@@ -3,9 +3,11 @@
 namespace App\Security;
 
 use App\Entity\User;
+use App\Event\LogEvent;
 use App\Repository\UserRepository;
 use App\Service\Director\LogDirector;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
@@ -62,6 +64,10 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
      * @var LogDirector
      */
     private LogDirector $logDirector;
+    /**
+     * @var EventDispatcherInterface
+     */
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -71,6 +77,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
         RouterInterface $router,
         Environment $twig,
         LogDirector $logDirector,
+        EventDispatcherInterface $eventDispatcher,
         string $appCsrfToken)
     {
         $this->userRepository = $userRepository;
@@ -81,6 +88,7 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
         $this->entityManager = $entityManager;
         $this->twig = $twig;
         $this->logDirector = $logDirector;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function supports(Request $request)
@@ -127,13 +135,12 @@ class LoginFormAuthenticator extends AbstractFormLoginAuthenticator
         $loginUser->setLastLoginDate(new \DateTime('now'));
 
         $this->entityManager->persist($loginUser);
-
-        // todo: refactor using event and subscriber
-        $this->entityManager->persist(
-            $this->logDirector->newDirectionLog($loginUser)
-        );
-
         $this->entityManager->flush();
+
+        $this->eventDispatcher->dispatch(
+            new LogEvent($loginUser),
+            LogEvent::NAME
+        );
 
         if($targetPath = $this->getTargetPath($request->getSession(), $providerKey))
         {
