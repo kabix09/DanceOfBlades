@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Entity\UserKeys;
 use App\Event\NewAccountCreatedEvent;
 use App\Form\Dto\RegisterUserModel;
 use App\Form\LoginFormType;
@@ -45,6 +44,9 @@ class SecurityController extends AbstractController
         $this->emailVerifyKey = $emailVerifyKey;
         $this->eventDispatcher = $eventDispatcher;
         $this->entityManager = $entityManager;
+
+        //$em = $this->container->get('doctrine.orm.entity_manager');
+        //$em->getConnection()->getDatabasePlatform()->registerDoctrineTypeMapping('timestamp','string');
     }
 
     /**

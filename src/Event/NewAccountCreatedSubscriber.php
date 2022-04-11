@@ -2,19 +2,17 @@
 
 namespace App\Event;
 
-use App\Service\Mailer;
+use App\Message\SendRegisterEmail;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 class NewAccountCreatedSubscriber implements EventSubscriberInterface
 {
-    private Mailer $mailer;
+    private MessageBusInterface $messageBus;
 
-    /**
-     * @param Mailer $mailer
-     */
-    public function __construct(Mailer $mailer)
+    public function __construct(MessageBusInterface $messageBus)
     {
-        $this->mailer = $mailer;
+        $this->messageBus = $messageBus;
     }
 
     public static function getSubscribedEvents(): array
@@ -27,8 +25,13 @@ class NewAccountCreatedSubscriber implements EventSubscriberInterface
     public function onAccountRegistered(NewAccountCreatedEvent $event)
     {
         /*
-         * * email verification section
+         * use messenger to dispatch sending create account email
          */
-        $this->mailer->sendWelcomeMessage($event->getUser(), $event->getToken());
+        $this->messageBus->dispatch(
+            new SendRegisterEmail(
+                $event->getUser(),
+                $event->getToken()
+            )
+        );
     }
 }

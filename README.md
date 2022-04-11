@@ -22,7 +22,7 @@ Project is created with:
 * [Mailtrap](https://mailtrap.io/)
 
 ## Launch
-#### Common use 
+### Common use 
 
 To run this project install [php](https://windows.php.net/download#php-7.4) interpreter and [symfony local server](https://symfony.com/doc/current/setup/symfony_server.html). 
 Next move to the directory where you have composer.json and update dependencies:
@@ -35,7 +35,7 @@ $ symfont server:start --no-tls
 ```
 Now everything is prepared. You can open your browser and go to localhost website. 
 
-#### With mercure feature
+### With mercure feature
 To run this project with [Mercure](https://mercure.rocks/) you need to change environment to [Xampp](https://www.apachefriends.org/pl/index.html) and move project files into `htdocs` folder. 
 
 Next [install Mercure](https://mercure.rocks/docs/hub/install) package on your computer and add source path to PATH system variable depending on your operating system.
@@ -47,10 +47,28 @@ Set `mercureSecretToken` value on your secret key which is the same as `MERCURE_
 
 Now everything is prepared. You can open your browser and go to localhost website. 
 
+### With RabbitMQ feature
+To run this project with [RabbitMQ](https://www.rabbitmq.com/) you need to [install](https://www.rabbitmq.com/download.html) this feature and next config your `.env` project file. Make sure you choose **amqp** transport and leave the rest commented out.
+```
+###> symfony/messenger ###
+# Choose one of the transports below
+# MESSENGER_TRANSPORT_DSN=doctrine://default
+    MESSENGER_TRANSPORT_DSN=amqp://guest:guest@localhost:5672/%2f/messages
+# MESSENGER_TRANSPORT_DSN=redis://localhost:6379/messages
+###< symfony/messenger ###
+```
+
+Next open new bash window. Set active directory on your project location. And use:
+```
+$ php bin/console messenger:setup-transports
+$ php bin/console messenger:consume async_email_register_transport -vv
+```
+Now everything is prepared. You can open your browser and go to localhost website.
+
 ## Features
 * Menu
 * Login and register module
-* Email authentication
+* Email authentication - using [RabbitMQ](https://www.rabbitmq.com/) to asynchronous messaging
 * Friends module - using [Mercure](https://mercure.rocks/) to broadcast new invitations in real-time from server
 * Use [Redis](https://redis.io/) to store session
 

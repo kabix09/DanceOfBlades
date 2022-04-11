@@ -14,6 +14,11 @@ doctrine:
         types:
             mydatetime: App\Types\MyDateTimeType
             uuid: Ramsey\Uuid\Doctrine\UuidType
+
+        schema_filter: '~^(?!messenger_messages)~'
+        mapping_types:
+            timestamp: string   # for mapping timestamp to string in mssql database, timestamp gets error - occurred during create messegner_messages table
+
     orm:
         auto_generate_proxy_classes: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
