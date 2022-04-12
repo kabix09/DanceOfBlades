@@ -2,17 +2,25 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\Collection;
+use App\Repository\MapRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Sluggable\Util\Urlizer;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
+use Ramsey\Uuid\UuidInterface;
+use Doctrine\Common\Collections\Collection;
+
 
 /**
  * Map
  *
- * @ORM\Table(name="map", indexes={@ORM\Index(name="IX_map_name", columns={"name"}), @ORM\Index(name="IX_map_region_uuid", columns={"region"})})
- * @ORM\Entity
+ * @ORM\Table(
+ *     name="map",
+ *     indexes={
+ *          @ORM\Index(name="IX_map_name", columns={"name"}),
+ *          @ORM\Index(name="IX_map_region_uuid", columns={"region"})
+ *      }
+ * )
+ * @ORM\Entity(repositoryClass=MapRepository::class)
  */
 class Map
 {

@@ -6,7 +6,7 @@ use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Sluggable\Util\Urlizer;
 use Ramsey\Uuid\Doctrine\UuidGenerator;
-
+Use App\Repository\BossRepository;
 
 /**
  * Boss
@@ -23,7 +23,7 @@ use Ramsey\Uuid\Doctrine\UuidGenerator;
  *          @ORM\UniqueConstraint(name="PK_boss_strength", columns={"strength"})
  *     }
  * )
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass=BossRepository::class)
  */
 class Boss
 {

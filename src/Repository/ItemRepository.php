@@ -3,7 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Item;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Repository\AbstractRepository\SluggableRepository;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -14,7 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method Item[]    findAll()
  * @method Item[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ItemRepository extends ServiceEntityRepository
+class ItemRepository extends SluggableRepository
 {
     public function __construct(ManagerRegistry $registry)
     {

@@ -22,12 +22,18 @@ class SlugParamConverter implements ParamConverterInterface
     private MapRepository $mapRepository;
 
     /**
+     * @var EntityManagerInterface
+     */
+    private EntityManagerInterface $entityManager;
+
+    /**
      * SlugParamConverter constructor.
      * @param MapRepository $mapRepository
      */
-    public function __construct(MapRepository $mapRepository)
+    public function __construct(MapRepository $mapRepository, EntityManagerInterface $entityManager)
     {
         $this->mapRepository = $mapRepository;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -35,28 +41,28 @@ class SlugParamConverter implements ParamConverterInterface
      */
     public function apply(Request $request, ParamConverter $configuration)
     {
+        $dynamicTypedRepository = $this->entityManager->getRepository('App\Entity\\'.$configuration->getClass());
         $options = $configuration->getOptions()['mapping'];
 
         if (!isset($options['slug'])) {
             throw new BadRequestHttpException('Slug parameter not provided in request.');
         }
 
-        /** @var Map $matchedMap */
-        $matchedMap = null;
+        $matchedEntity = null;
 
-        foreach ($this->mapRepository->getMapsNames() as $index => $content) {
+        foreach ($dynamicTypedRepository->getNames() as $index => $content) {
             if(Urlizer::urlize($content['name']) === $request->attributes->get($options['slug']))
             {
                 // without this i get 'Unable to guess how to get a Doctrine instance from the request information for parameter "map".' (???)
                 $request->attributes->set('name', $content['name']);
                 // $request->attributes->remove($options['slug']); // without this attributes have slug => vale & name => name-value
-                $matchedMap = $this->mapRepository->findOneBy(['name' => $content['name']]);
+                $matchedEntity = $dynamicTypedRepository->findOneBy(['name' => $content['name']]);
 
                 break;
             }
         }
 
-        $request->attributes->set($configuration->getName(), $matchedMap);
+        $request->attributes->set($configuration->getName(), $matchedEntity);
 
         return true;
     }
